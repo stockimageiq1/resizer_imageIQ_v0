@@ -19,7 +19,7 @@ function createWindow(): BrowserWindow {
     height: 740,
     minWidth: 900,
     minHeight: 600,
-    title: 'IQ Shrink',
+    title: 'ImageIQ Resizer',
     show: false,
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.js'),

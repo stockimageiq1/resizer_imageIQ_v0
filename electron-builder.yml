@@ -1,5 +1,5 @@
-appId: com.stockimageiq.iqshrink
-productName: IQ Shrink
+appId: com.stockimageiq.resizer
+productName: ImageIQ Resizer
 
 directories:
   buildResources: build
@@ -65,5 +65,5 @@ toolsets:
 # repository once the remote exists.
 publish:
   provider: github
-  owner: stockimageiq
-  repo: iq-shrink
+  owner: stockimageiq1
+  repo: resizer_imageIQ_v0

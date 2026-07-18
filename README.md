@@ -1,4 +1,4 @@
-# iq-shrink
+# ImageIQ Resizer
 
 STOCK IMAGEIQ local media-downscaler: a processing engine with two entry
 points — a CLI and an Electron desktop app. Produces a lowres proxy tree of an
@@ -7,9 +7,9 @@ metadata processing with CSV export.
 
 ## Packaging (Milestone 4)
 
-- `npm run package:mac` → `release/IQ Shrink-<version>-<arch>.dmg` (host
+- `npm run package:mac` → `release/ImageIQ Resizer-<version>-<arch>.dmg` (host
   arch; per-arch dmgs instead of universal — see electron-builder.yml).
-- `npm run package:win` → `release/IQ Shrink Setup <version>.exe` (nsis,
+- `npm run package:win` → `release/ImageIQ Resizer Setup <version>.exe` (nsis,
   x64; cross-buildable from macOS, natively built + runtime-verified in CI).
 - CI: pushing a `v*` tag builds mac (arm64+x64) and windows installers and
   attaches them to a draft GitHub Release (.github/workflows/release.yml).

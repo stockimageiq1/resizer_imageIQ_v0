@@ -1,35 +1,35 @@
-# Installing IQ Shrink (v0.1.x — unsigned builds)
+# Installing ImageIQ Resizer (v0.1.x — unsigned builds)
 
-IQ Shrink v1 ships **unsigned** (code signing certificates come later).
+ImageIQ Resizer v1 ships **unsigned** (code signing certificates come later).
 Both macOS and Windows will warn you the first time — this is expected for
 unsigned apps and the steps below get you past it. You only do this once.
 
 ## macOS (.dmg)
 
-1. Open the downloaded `IQ Shrink-<version>-arm64.dmg` (Apple Silicon) or
-   `IQ Shrink-<version>.dmg` (Intel) and drag **IQ Shrink** into
+1. Open the downloaded `ImageIQ Resizer-<version>-arm64.dmg` (Apple Silicon) or
+   `ImageIQ Resizer-<version>.dmg` (Intel) and drag **ImageIQ Resizer** into
    **Applications**.
 2. Open the app. macOS will block it with:
 
-   > **“IQ Shrink” Not Opened** — Apple could not verify “IQ Shrink” is free
+   > **“ImageIQ Resizer” Not Opened** — Apple could not verify “ImageIQ Resizer” is free
    > of malware that may harm your Mac or compromise your privacy.
 
    Click **Done** (not *Move to Trash*).
 3. Open **System Settings → Privacy & Security**, scroll down to the
    **Security** section. You'll see:
 
-   > “IQ Shrink” was blocked to protect your Mac.
+   > “ImageIQ Resizer” was blocked to protect your Mac.
 
    Click **Open Anyway**, authenticate (Touch ID / password), then click
    **Open Anyway** again in the confirmation dialog.
 4. The app opens normally from now on.
 
 On older macOS versions (Sonoma 14 and earlier) there is a shortcut:
-right-click (Control-click) **IQ Shrink.app** → **Open** → **Open**.
+right-click (Control-click) **ImageIQ Resizer.app** → **Open** → **Open**.
 
 ## Windows (.exe installer)
 
-1. Run `IQ Shrink Setup <version>.exe`. SmartScreen will show:
+1. Run `ImageIQ Resizer Setup <version>.exe`. SmartScreen will show:
 
    > **Windows protected your PC** — Microsoft Defender SmartScreen
    > prevented an unrecognized app from starting.

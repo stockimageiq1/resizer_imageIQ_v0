@@ -7,7 +7,7 @@ encoder matrix. Work through this list and record results.
 
 ## Install
 
-- [ ] Run `IQ Shrink Setup <version>.exe` → SmartScreen appears → More info
+- [ ] Run `ImageIQ Resizer Setup <version>.exe` → SmartScreen appears → More info
       → Run anyway (wording per docs/INSTALL.md).
 - [ ] Installer allows choosing the install directory; desktop shortcut is
       created; app launches from both shortcut and Start menu.
@@ -17,7 +17,7 @@ encoder matrix. Work through this list and record results.
 - [ ] App starts with NO "Video engine missing" dialog (the startup
       assertion found `ffmpeg.exe` in `resources/app.asar.unpacked/...`).
 - [ ] Run the harness from a terminal for a machine-readable report:
-      `"C:\...\IQ Shrink\IQ Shrink.exe" --e2e "C:\path\to\test folder"`
+      `"C:\...\ImageIQ Resizer\ImageIQ Resizer.exe" --e2e "C:\path\to\test folder"`
       → the `E2E RESULT` line prints `caps` (capabilities) and
       `encoderUsage`.
 - [ ] `caps.heicSupported` — record true/false (expected true with the

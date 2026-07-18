@@ -1,5 +1,6 @@
 {
-  "name": "iq-shrink",
+  "name": "imageiq-resizer",
+  "productName": "ImageIQ Resizer",
   "version": "0.1.0",
   "description": "Local media-downscaling engine + CLI for STOCK IMAGEIQ (lowres proxy trees for metadata processing)",
   "private": true,

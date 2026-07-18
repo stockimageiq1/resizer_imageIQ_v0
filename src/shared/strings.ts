@@ -5,12 +5,12 @@ import type { ShrinkErrorCode } from '../engine/types';
  * A Slovenian translation is a single-file change: translate this file.
  */
 export const STR = {
-  appName: 'IQ Shrink',
-  brandName: 'STOCK IMAGEIQ',
+  appName: 'ImageIQ Resizer',
+  brandName: 'STOCK ImageIQ',
   tagline: 'lowres proxies for STOCK IMAGEIQ',
 
   nav: {
-    subtitle: 'IQ Shrink',
+    subtitle: 'Resizer',
     newRun: 'New Run',
     history: 'History',
     settings: 'Settings',
@@ -159,7 +159,7 @@ export const STR = {
 
   updater: {
     title: 'Update available',
-    detail: (version: string): string => `IQ Shrink ${version} is available. Download and restart to update?`,
+    detail: (version: string): string => `ImageIQ Resizer ${version} is available. Download and restart to update?`,
     download: 'Download & Restart',
     later: 'Later',
   },
@@ -169,7 +169,7 @@ export const STR = {
     ffmpegMissing: (path: string): string =>
       `The bundled ffmpeg binary could not be found or is not executable:\n\n${path}\n\n` +
       'Images will still be processed, but every video will be copied unconverted. ' +
-      'Please reinstall IQ Shrink to fix this.',
+      'Please reinstall ImageIQ Resizer to fix this.',
     collision: {
       message: (name: string): string => `“${name}” already exists`,
       detail:
