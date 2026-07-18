@@ -42,11 +42,23 @@ win:
   target:
     - target: nsis
       arch: [x64]
+  # keep macOS binaries out of the Windows package (relevant when
+  # cross-building from a Mac where both platforms' binaries coexist)
+  files:
+    - "!node_modules/ffmpeg-static/ffmpeg"
+    - "!node_modules/@img/sharp-darwin-*/**"
+    - "!node_modules/@img/sharp-libvips-darwin-*/**"
 
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
+
+# Unified NSIS toolset (3.12): ships native binaries per host platform —
+# the legacy default bundle is x86_64-only on macOS and fails on arm64
+# hosts without Rosetta.
+toolsets:
+  nsis: 1.2.1
 
 # electron-updater feed (GitHub Releases). electron-builder writes
 # app-update.yml into the package from this block. Must match the real
