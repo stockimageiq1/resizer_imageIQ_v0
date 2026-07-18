@@ -40,7 +40,11 @@ export interface VideoAnalysis {
 }
 
 export function ffmpegPath(): string | null {
-  return ffmpegBinary;
+  if (ffmpegBinary === null) return null;
+  // Packaged Electron: binaries cannot be spawned from inside the asar
+  // archive. ffmpeg-static is asarUnpack'd, but its module resolves the
+  // virtual asar path — rewrite to the real unpacked location. No-op in dev.
+  return ffmpegBinary.replace(`app.asar${path.sep}`, `app.asar.unpacked${path.sep}`);
 }
 
 /**

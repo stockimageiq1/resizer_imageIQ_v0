@@ -1,0 +1,57 @@
+appId: com.stockimageiq.iqshrink
+productName: IQ Shrink
+
+directories:
+  buildResources: build
+  output: release
+
+# Ship only the built app; src/test/scripts/dist stay out of the package.
+# node_modules for production dependencies are added automatically.
+files:
+  - out/**
+  - package.json
+
+# CRITICAL: binaries and native modules cannot load/spawn from inside the
+# asar archive.
+#  - ffmpeg-static: the ffmpeg binary is spawned as a child process — must be
+#    a real file. The engine's ffmpegPath() rewrites app.asar → app.asar.unpacked.
+#  - sharp + @img/*: sharp >= 0.33 ships its native code in per-platform
+#    @img/sharp-<os>-<cpu> packages (the officially recommended layout);
+#    unpack them all so require() hits real .node files.
+asarUnpack:
+  - "**/node_modules/ffmpeg-static/**"
+  - "**/node_modules/sharp/**"
+  - "**/node_modules/@img/**"
+
+mac:
+  category: public.app-category.photography
+  icon: build/icon.icns
+  # v1 ships unsigned (documented in docs/INSTALL.md); flip when the Apple
+  # Developer certificate lands.
+  identity: null
+  target:
+    - target: dmg
+  # Per-arch dmgs instead of universal: sharp's per-arch @img packages and
+  # ffmpeg-static's single-arch postinstall binary do not merge cleanly into
+  # one universal asar (mergeASARs requires identical file sets). CI builds
+  # each arch with a matching npm_config_arch install; local default is the
+  # host arch.
+
+win:
+  icon: build/icon.ico
+  target:
+    - target: nsis
+      arch: [x64]
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+
+# electron-updater feed (GitHub Releases). electron-builder writes
+# app-update.yml into the package from this block. Must match the real
+# repository once the remote exists.
+publish:
+  provider: github
+  owner: stockimageiq
+  repo: iq-shrink

@@ -136,7 +136,19 @@ export const STR = {
     cancel: 'Cancel',
   },
 
+  updater: {
+    title: 'Update available',
+    detail: (version: string): string => `IQ Shrink ${version} is available. Download and restart to update?`,
+    download: 'Download & Restart',
+    later: 'Later',
+  },
+
   dialogs: {
+    ffmpegMissingTitle: 'Video engine missing',
+    ffmpegMissing: (path: string): string =>
+      `The bundled ffmpeg binary could not be found or is not executable:\n\n${path}\n\n` +
+      'Images will still be processed, but every video will be copied unconverted. ' +
+      'Please reinstall IQ Shrink to fix this.',
     collision: {
       message: (name: string): string => `“${name}” already exists`,
       detail:

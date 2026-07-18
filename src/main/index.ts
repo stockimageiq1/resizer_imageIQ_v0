@@ -1,7 +1,11 @@
+import { constants as fsConstants, promises as fs } from 'node:fs';
 import * as path from 'node:path';
-import { app, BrowserWindow, Menu } from 'electron';
+import { app, BrowserWindow, dialog, Menu } from 'electron';
+import { ffmpegPath } from '../engine/videoProcessor';
+import { STR } from '../shared/strings';
 import { registerIpc } from './ipc';
 import { anyRunActive, cancelRun } from './runManager';
+import { initAutoUpdater } from './updater';
 
 const smokeTest = process.argv.includes('--smoke-test');
 const e2eFlagIndex = process.argv.indexOf('--e2e');
@@ -37,8 +41,37 @@ function createWindow(): BrowserWindow {
   return win;
 }
 
-void app.whenReady().then(() => {
+/**
+ * Startup assertion: every bundled binary the engine spawns must exist and be
+ * executable in the packaged layout (asarUnpack + path rewrite). ffmpeg is
+ * currently the ONLY binary (M3 deliberately avoided adding ffprobe) — add
+ * any future binary to this list.
+ */
+async function assertBundledBinaries(): Promise<void> {
+  const binaries: { name: string; path: string | null }[] = [{ name: 'ffmpeg', path: ffmpegPath() }];
+  for (const binary of binaries) {
+    let ok = binary.path !== null;
+    if (ok && binary.path !== null) {
+      try {
+        await fs.access(binary.path, fsConstants.X_OK);
+      } catch {
+        ok = false;
+      }
+    }
+    if (!ok) {
+      // machine-readable line for smoke/e2e harnesses; dialog for real users
+      console.log(`BINARY-ASSERT FAIL ${binary.name}: ${binary.path ?? '(unresolved)'}`);
+      if (!smokeTest && e2eInputDir === undefined) {
+        dialog.showErrorBox(STR.dialogs.ffmpegMissingTitle, STR.dialogs.ffmpegMissing(binary.path ?? '(unresolved)'));
+      }
+    }
+  }
+}
+
+void app.whenReady().then(async () => {
   Menu.setApplicationMenu(null); // single window, no menus
+  await assertBundledBinaries();
+  initAutoUpdater();
   registerIpc(() => {
     if (mainWindow === null || mainWindow.isDestroyed()) mainWindow = createWindow();
     return mainWindow;
@@ -88,6 +121,7 @@ async function runE2e(win: BrowserWindow, inputDir: string): Promise<void> {
           const off = window.iqShrink.onDone((m) => { off(); resolve(m); });
         });
 
+      const caps = await window.iqShrink.getCapabilities();
       const preview = await window.iqShrink.scanPreview(dir, null);
 
       const cancelledPromise = waitDone();
@@ -108,6 +142,7 @@ async function runE2e(win: BrowserWindow, inputDir: string): Promise<void> {
       offProgress();
 
       return {
+        caps,
         preview: { images: preview.imageCount, videos: preview.videoCount, files: preview.totalFiles },
         cancelledStatus: cancelled.status,
         partialGone,
@@ -117,6 +152,7 @@ async function runE2e(win: BrowserWindow, inputDir: string): Promise<void> {
               images: done.summary.imagesProcessed,
               videos: done.summary.videosProcessed,
               copied: done.summary.copiedUnprocessed.length,
+              encoderUsage: done.summary.encoderUsage,
               outputPath: done.summary.outputPath,
               zipPath: done.summary.zipPath ?? null,
             }
