@@ -42,11 +42,30 @@ body {
   padding: 1.4rem 0 1rem;
 }
 
-.wordmark {
-  font-weight: 800;
-  font-size: 1.25rem;
-  letter-spacing: -0.02em;
+.brand-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
   padding: 0 1.2rem 1.4rem;
+}
+
+.brand-logo {
+  height: 36px;
+  width: auto;
+  align-self: flex-start;
+  display: block;
+}
+
+.brand-mark {
+  display: none;
+  height: 28px;
+  width: auto;
+  margin: 0 auto;
+}
+
+.brand-subtitle {
+  font-size: 0.78rem;
+  color: var(--sidebar-ink-muted);
 }
 
 .nav-items {
@@ -116,15 +135,18 @@ body {
   .sidebar {
     width: 64px;
   }
-  .wordmark {
-    font-size: 0.9rem;
+  .brand-block {
     padding-left: 0;
     padding-right: 0;
-    text-align: center;
   }
+  .brand-logo,
+  .brand-subtitle,
   .nav-label,
   .sidebar-footer {
     display: none;
+  }
+  .brand-mark {
+    display: block;
   }
   .nav-item {
     justify-content: center;

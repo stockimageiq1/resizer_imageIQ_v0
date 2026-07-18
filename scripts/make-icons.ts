@@ -1,8 +1,11 @@
 /**
- * Placeholder icon generator (real branding comes later):
- * a minimal monochrome glyph — white down-arrow into a tray on a dark
- * rounded square. Produces build/icon.png, build/icon.icns (via macOS
- * iconutil), build/icon.ico (hand-assembled PNG-based ICO).
+ * App icon generator — rasterizes the real STOCK IMAGEIQ "iq" monogram
+ * (assets/mark-iq.svg, duo-color) into build/icon.png, build/icon.icns
+ * (via macOS iconutil) and build/icon.ico (hand-assembled PNG-based ICO).
+ *
+ *  - macOS: monogram centered on a white rounded square with ~12% outer
+ *    margin (current macOS icon convention).
+ *  - Windows: same art, full-bleed white square, slightly less margin.
  *
  *   npm run build && node dist/scripts/make-icons.js
  */
@@ -13,26 +16,50 @@ import sharp from 'sharp';
 
 const ROOT = path.join(__dirname, '..', '..');
 const BUILD_DIR = path.join(ROOT, 'build');
+const MARK_SVG = path.join(ROOT, 'assets', 'mark-iq.svg');
 
-const GLYPH_SVG = `
-<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-  <rect x="64" y="64" width="896" height="896" rx="200" fill="#1d2026"/>
-  <g stroke="#f4f5f7" stroke-width="72" stroke-linecap="round" stroke-linejoin="round" fill="none">
-    <path d="M512 288 v300"/>
-    <path d="M376 452 L512 596 L648 452"/>
-    <path d="M312 700 h400"/>
-  </g>
-</svg>`;
+const WHITE = { r: 255, g: 255, b: 255, alpha: 1 } as const;
 
-async function png(size: number, dest: string): Promise<void> {
-  await sharp(Buffer.from(GLYPH_SVG)).resize(size, size).png().toFile(dest);
+async function markPng(height: number): Promise<Buffer> {
+  return sharp(await fs.readFile(MARK_SVG))
+    .resize({ height: Math.max(4, height) })
+    .png()
+    .toBuffer();
+}
+
+function roundedSquareSvg(canvas: number, square: number, radius: number): string {
+  const offset = (canvas - square) / 2;
+  return (
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${canvas}" height="${canvas}">` +
+    `<rect x="${offset}" y="${offset}" width="${square}" height="${square}" rx="${radius}" fill="rgb(255,255,255)"/>` +
+    `</svg>`
+  );
+}
+
+/** macOS style: white rounded square, ~12% margin, monogram ~72% of square. */
+async function macIcon(size: number): Promise<Buffer> {
+  const margin = Math.round(size * 0.12);
+  const square = size - 2 * margin;
+  const radius = Math.round(square * 0.225);
+  const mark = await markPng(Math.round(square * 0.72));
+  return sharp(Buffer.from(roundedSquareSvg(size, square, radius)))
+    .composite([{ input: mark, gravity: 'center' }])
+    .png()
+    .toBuffer();
+}
+
+/** Windows style: full-bleed white square, monogram ~80% of the canvas. */
+async function winIcon(size: number): Promise<Buffer> {
+  const mark = await markPng(Math.round(size * 0.8));
+  return sharp({ create: { width: size, height: size, channels: 4, background: WHITE } })
+    .composite([{ input: mark, gravity: 'center' }])
+    .png()
+    .toBuffer();
 }
 
 /** ICO container with PNG-encoded images (valid since Vista). */
 async function makeIco(sizes: number[], dest: string): Promise<void> {
-  const images = await Promise.all(
-    sizes.map((size) => sharp(Buffer.from(GLYPH_SVG)).resize(size, size).png().toBuffer()),
-  );
+  const images = await Promise.all(sizes.map((size) => winIcon(size)));
   const header = Buffer.alloc(6);
   header.writeUInt16LE(0, 0); // reserved
   header.writeUInt16LE(1, 2); // type: icon
@@ -60,7 +87,7 @@ async function makeIco(sizes: number[], dest: string): Promise<void> {
 async function main(): Promise<void> {
   await fs.mkdir(BUILD_DIR, { recursive: true });
 
-  await png(1024, path.join(BUILD_DIR, 'icon.png'));
+  await fs.writeFile(path.join(BUILD_DIR, 'icon.png'), await macIcon(1024));
 
   // .icns via macOS iconutil (only runs on macOS; icns is committed so CI
   // and other platforms never need to regenerate it)
@@ -68,15 +95,15 @@ async function main(): Promise<void> {
   await fs.rm(iconset, { recursive: true, force: true });
   await fs.mkdir(iconset, { recursive: true });
   for (const base of [16, 32, 128, 256, 512]) {
-    await png(base, path.join(iconset, `icon_${base}x${base}.png`));
-    await png(base * 2, path.join(iconset, `icon_${base}x${base}@2x.png`));
+    await fs.writeFile(path.join(iconset, `icon_${base}x${base}.png`), await macIcon(base));
+    await fs.writeFile(path.join(iconset, `icon_${base}x${base}@2x.png`), await macIcon(base * 2));
   }
   execFileSync('iconutil', ['-c', 'icns', iconset, '-o', path.join(BUILD_DIR, 'icon.icns')]);
   await fs.rm(iconset, { recursive: true, force: true });
 
   await makeIco([16, 24, 32, 48, 64, 128, 256], path.join(BUILD_DIR, 'icon.ico'));
 
-  console.log('icons written to build/');
+  console.log('brand icons written to build/');
 }
 
 void main();

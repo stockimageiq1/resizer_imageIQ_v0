@@ -2,6 +2,8 @@ import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import type { ShrinkErrorCode, ShrinkSummary } from '../../engine/types';
 import { DEFAULT_SETTINGS, type Capabilities, type ScanPreview, type Settings } from '../../shared/ipc';
 import { STR } from '../../shared/strings';
+import logoWhite from '../../../assets/logo-white.svg';
+import markIqWhite from '../../../assets/mark-iq-white.svg';
 import { formatBytes, formatDuration } from './format';
 import { HistoryPage } from './HistoryPage';
 import { SettingsPage } from './SettingsPage';
@@ -212,7 +214,11 @@ function Sidebar(props: { page: Page; onNavigate: (page: Page) => void; version:
   ];
   return (
     <nav className="sidebar">
-      <div className="wordmark">{STR.appName}</div>
+      <div className="brand-block">
+        <img className="brand-logo" src={logoWhite} alt={STR.brandName} />
+        <img className="brand-mark" src={markIqWhite} alt={STR.brandName} />
+        <div className="brand-subtitle">{STR.nav.subtitle}</div>
+      </div>
       <div className="nav-items">
         {items.map((item) => (
           <button
