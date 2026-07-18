@@ -5,11 +5,10 @@ import { STR } from '../../shared/strings';
 import logoWhite from '../../../assets/logo-white.svg';
 import markIqWhite from '../../../assets/mark-iq-white.svg';
 import { formatBytes, formatDuration } from './format';
-import { HistoryPage } from './HistoryPage';
 import { SettingsPage } from './SettingsPage';
 import { etaMs, initialRunState, overallFraction, reduceRunState, RunState } from './runState';
 
-type Page = 'new-run' | 'history' | 'settings';
+type Page = 'new-run' | 'settings';
 
 type Screen =
   | { kind: 'idle' }
@@ -174,8 +173,6 @@ export function App(): React.JSX.Element {
             </>
           )}
 
-          {page === 'history' && <HistoryPage />}
-
           {page === 'settings' && <SettingsPage settings={settings} onSaved={setSettings} />}
         </div>
       </div>
@@ -186,12 +183,6 @@ export function App(): React.JSX.Element {
 function NavIcon(props: { kind: Page }): React.JSX.Element {
   const paths: Record<Page, React.JSX.Element> = {
     'new-run': <path d="M12 5v14M5 12h14" />,
-    history: (
-      <>
-        <circle cx="12" cy="12" r="9" />
-        <path d="M12 7v5l3 3" />
-      </>
-    ),
     settings: (
       <>
         <circle cx="12" cy="12" r="3" />
@@ -209,7 +200,6 @@ function NavIcon(props: { kind: Page }): React.JSX.Element {
 function Sidebar(props: { page: Page; onNavigate: (page: Page) => void; version: string | null }): React.JSX.Element {
   const items: { key: Page; label: string }[] = [
     { key: 'new-run', label: STR.nav.newRun },
-    { key: 'history', label: STR.nav.history },
     { key: 'settings', label: STR.nav.settings },
   ];
   return (

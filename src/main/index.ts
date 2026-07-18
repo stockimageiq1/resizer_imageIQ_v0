@@ -70,6 +70,8 @@ async function assertBundledBinaries(): Promise<void> {
 
 void app.whenReady().then(async () => {
   Menu.setApplicationMenu(null); // single window, no menus
+  // History feature was removed — silently clear any leftover store
+  await fs.rm(path.join(app.getPath('userData'), 'history.json'), { force: true }).catch(() => undefined);
   await assertBundledBinaries();
   initAutoUpdater();
   registerIpc(() => {

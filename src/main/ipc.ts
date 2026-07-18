@@ -2,7 +2,6 @@ import { promises as fs } from 'node:fs';
 import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
 import { engineCapabilities } from '../engine/capabilities';
 import { Capabilities, IpcChannels, Settings, StartRunRequest } from '../shared/ipc';
-import { listHistory } from './history';
 import { cancelRun, resolveOutDir, scanPreview, startRun } from './runManager';
 import { getSettings, setSettings } from './settings';
 
@@ -82,6 +81,4 @@ export function registerIpc(getWindow: () => BrowserWindow): void {
       appVersion: app.getVersion(),
     };
   });
-
-  ipcMain.handle(IpcChannels.historyList, () => listHistory());
 }

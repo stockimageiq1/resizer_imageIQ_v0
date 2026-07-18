@@ -12,7 +12,6 @@ export const STR = {
   nav: {
     subtitle: 'Resizer',
     newRun: 'New Run',
-    history: 'History',
     settings: 'Settings',
     version: (version: string): string => `v${version}`,
   },
@@ -47,17 +46,6 @@ export const STR = {
     createZip: 'Create ZIP for upload',
     start: 'Resize now',
     emptyFolder: 'This folder has no processable files.',
-  },
-
-  history: {
-    title: 'History',
-    empty: 'No runs yet — prepare your first folder and it will show up here.',
-    outcomeDone: 'Done',
-    outcomeCancelled: 'Cancelled',
-    outcomeError: 'Error',
-    showInFolder: 'Show in Folder',
-    movedOrDeleted: 'moved or deleted',
-    copiedCount: (count: number): string => `${count} copied unprocessed`,
   },
 
   running: {

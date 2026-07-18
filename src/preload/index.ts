@@ -31,7 +31,6 @@ const api: RendererApi = {
   setSettings: (patch: Partial<Settings>) => ipcRenderer.invoke(IpcChannels.settingsSet, patch),
   isDirectory: (target) => ipcRenderer.invoke(IpcChannels.isDirectory, target),
   getCapabilities: () => ipcRenderer.invoke(IpcChannels.capabilities),
-  listHistory: () => ipcRenderer.invoke(IpcChannels.historyList),
   getPathForFile: (file) => webUtils.getPathForFile(file),
 };
 

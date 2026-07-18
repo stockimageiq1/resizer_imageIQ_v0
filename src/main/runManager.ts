@@ -14,7 +14,6 @@ import {
   StartRunResult,
 } from '../shared/ipc';
 import { STR } from '../shared/strings';
-import { appendHistory } from './history';
 import { getSettings } from './settings';
 
 interface ActiveRun {
@@ -189,30 +188,9 @@ export async function startRun(win: BrowserWindow, request: StartRunRequest): Pr
       if (err instanceof ShrinkError) return { status: 'error', code: err.code, message: err.message };
       return { status: 'error', code: 'UNKNOWN', message: err instanceof Error ? err.message : String(err) };
     })
-    .then(async (message) => {
+    .then((message) => {
       // clear BEFORE notifying, so a renderer reacting to "done" can start the next run
       active = null;
-      try {
-        await appendHistory({
-          timestamp: Date.now(),
-          folderName: path.basename(inputDir),
-          inputPath: inputDir,
-          outcome: message.status,
-          outputPath: outDir,
-          zipPath,
-          copiedUnprocessed: message.status === 'done' ? message.summary.copiedUnprocessed.length : 0,
-          ...(message.status === 'done'
-            ? {
-                inputBytes: message.summary.inputBytes,
-                outputBytes: message.summary.outputBytes,
-                percentSaved: message.summary.percentSaved,
-                elapsedMs: message.summary.elapsedMs,
-              }
-            : {}),
-        });
-      } catch {
-        // history must never break a run
-      }
       send(win, IpcChannels.runDone, message);
     });
 

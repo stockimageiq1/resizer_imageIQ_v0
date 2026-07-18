@@ -27,7 +27,7 @@ metadata processing with CSV export.
 - Engine runs in the main process; renderer is sandboxed
   (contextIsolation, no nodeIntegration) and talks only through the typed
   `window.iqShrink` bridge defined in `src/shared/ipc.ts`.
-- Sidebar navigation (New Run / History / Settings). New Run: drag a single
+- Sidebar navigation (New Run / Settings). New Run: drag a single
   folder (or Choose Folder…) → preview with count chips + size, an in-flow
   "Save to" choice (next to source / custom location, "Remember this choice"
   persists it) and a per-run ZIP toggle → Resize now → live
@@ -35,9 +35,6 @@ metadata processing with CSV export.
   headline and Show in Folder. Cancel kills the active ffmpeg encode and
   deletes the partial output. Collisions offer Overwrite / Keep Both / Cancel
   (Keep Both writes `{name}_lowres_2`, `_3`, …).
-- History page: the last 50 runs (done / cancelled / error) with size
-  reduction and Show in Folder while the output still exists
-  (userData/history.json).
 - Settings page: image max dimension (256–4096, default 1024), JPEG
   quality (40–95, default 80), video max height (240–2160, default 720), CRF
   (18–35, default 27), keep audio (default off), hardware acceleration

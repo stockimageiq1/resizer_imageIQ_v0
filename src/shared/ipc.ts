@@ -15,7 +15,6 @@ export const IpcChannels = {
   settingsSet: 'settings:set',
   isDirectory: 'fs:isDirectory',
   capabilities: 'app:capabilities',
-  historyList: 'history:list',
 } as const;
 
 export interface Settings {
@@ -95,28 +94,6 @@ export interface StartRunRequest {
   createZip: boolean;
 }
 
-/** One finished run (done, cancelled, or error), persisted in userData/history.json. */
-export interface HistoryRecord {
-  /** Completion time, ms since epoch. */
-  timestamp: number;
-  folderName: string;
-  inputPath: string;
-  outcome: 'done' | 'cancelled' | 'error';
-  outputPath: string;
-  zipPath: string | null;
-  copiedUnprocessed: number;
-  /** Present only when outcome is 'done'. */
-  inputBytes?: number;
-  outputBytes?: number;
-  percentSaved?: number;
-  elapsedMs?: number;
-}
-
-/** HistoryRecord enriched at list time with an existence check on outputPath. */
-export interface HistoryEntry extends HistoryRecord {
-  outputExists: boolean;
-}
-
 export type StartRunResult =
   | { started: true; outDir: string }
   | { started: false; reason: 'run-active' | 'user-cancelled' | 'error'; message?: string };
@@ -150,7 +127,6 @@ export interface RendererApi {
   setSettings(patch: Partial<Settings>): Promise<Settings>;
   isDirectory(path: string): Promise<boolean>;
   getCapabilities(): Promise<Capabilities>;
-  listHistory(): Promise<HistoryEntry[]>;
   /** Sync: resolves a dropped File to its absolute path (Electron webUtils). */
   getPathForFile(file: File): string;
 }
