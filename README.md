@@ -27,18 +27,25 @@ metadata processing with CSV export.
 - Engine runs in the main process; renderer is sandboxed
   (contextIsolation, no nodeIntegration) and talks only through the typed
   `window.iqShrink` bridge defined in `src/shared/ipc.ts`.
-- Drag a single folder (or Choose Folder…) → preview with counts/size/output
-  path + ZIP and output-location settings → Prepare for upload → live
+- Sidebar navigation (New Run / History / Settings). New Run: drag a single
+  folder (or Choose Folder…) → preview with count chips + size, an in-flow
+  "Save to" choice (next to source / custom location, "Remember this choice"
+  persists it) and a per-run ZIP toggle → Resize now → live
   progress (weighted bar, active-video percent, ETA) → done screen with size
   headline and Show in Folder. Cancel kills the active ffmpeg encode and
   deletes the partial output. Collisions offer Overwrite / Keep Both / Cancel
   (Keep Both writes `{name}_lowres_2`, `_3`, …).
-- Settings (gear icon): image max dimension (256–4096, default 1024), JPEG
+- History page: the last 50 runs (done / cancelled / error) with size
+  reduction and Show in Folder while the output still exists
+  (userData/history.json).
+- Settings page: image max dimension (256–4096, default 1024), JPEG
   quality (40–95, default 80), video max height (240–2160, default 720), CRF
-  (18–35, default 27), keep audio (default off), create-zip default, default
-  output location. Persisted in userData; main clamps ranges; changes apply
-  to the next run. Reset-to-defaults in the modal.
-- Light + dark theme via system preference. ALL user-facing strings
+  (18–35, default 27), keep audio (default off), hardware acceleration
+  (default on), create-zip default, default output location. Persisted in
+  userData; main clamps ranges; changes apply to the next run.
+  Reset-to-defaults on the page.
+- Light + dark theme via system preference; STOCK IMAGEIQ design tokens in
+  `src/renderer/src/tokens.css`. ALL user-facing strings
   (renderer + native dialogs) live in `src/shared/strings.ts` — a Slovenian
   translation is a single-file change.
 
@@ -71,7 +78,7 @@ iq-shrink <input-folder> [--zip] [--out <path>] [--overwrite]
 
 Local dev: `npm run build && node dist/src/cli.js <folder> --zip`
 
-## Engine (library for the future Electron shell)
+## Engine (library — consumed by both the CLI and the desktop app)
 
 ```ts
 import { runShrink, ShrinkSummary, ProgressEvent } from 'iq-shrink';
@@ -90,14 +97,15 @@ No console I/O in the engine; all feedback flows through `onProgress`:
 `scan` → `file-start` / `video-progress{percent}` / `file-done{outcome}` →
 `zip-start` / `zip-done`. Run-level failures throw `ShrinkError` with a typed
 `code` (`INPUT_NOT_FOUND | INPUT_NOT_DIRECTORY | OUTPUT_EXISTS |
-UNSAFE_OUTPUT | INSUFFICIENT_DISK`).
+UNSAFE_OUTPUT | INSUFFICIENT_DISK | CANCELLED`).
 
-`ShrinkSummary`: `imagesProcessed`, `videosProcessed`,
+`ShrinkSummary`: `imagesProcessed`, `videosProcessed`, `encoderUsage`,
 `copiedUnprocessed[{relPath, reason}]`, `inputBytes`, `outputBytes`,
 `percentSaved`, `elapsedMs`, `outputPath`, `zipPath?`.
 
-Also exported: `heicSupported()`, `ffmpegPath()`, and `encoderArgs()` — the
-single place to swap in hardware encoders in a later milestone.
+Also exported: `engineCapabilities()`, `heicSupported()`, `ffmpegPath()`,
+and `encoderArgs(crf, encoder)` — the one place encoder/rate-control
+settings live (libx264 + the hardware encoders).
 
 ## Processing rules
 

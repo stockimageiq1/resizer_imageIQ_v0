@@ -6,9 +6,11 @@ import type { ShrinkErrorCode } from '../engine/types';
  */
 export const STR = {
   appName: 'IQ Shrink',
+  brandName: 'STOCK IMAGEIQ',
   tagline: 'lowres proxies for STOCK IMAGEIQ',
 
   nav: {
+    subtitle: 'IQ Shrink',
     newRun: 'New Run',
     history: 'History',
     settings: 'Settings',
@@ -43,7 +45,7 @@ export const STR = {
     saveToChange: 'Change…',
     rememberChoice: 'Remember this choice',
     createZip: 'Create ZIP for upload',
-    start: 'Prepare for upload',
+    start: 'Resize now',
     emptyFolder: 'This folder has no processable files.',
   },
 
