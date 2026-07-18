@@ -1,7 +1,8 @@
 import { promises as fs } from 'node:fs';
-import { BrowserWindow, dialog, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
 import { engineCapabilities } from '../engine/capabilities';
 import { Capabilities, IpcChannels, Settings, StartRunRequest } from '../shared/ipc';
+import { listHistory } from './history';
 import { cancelRun, resolveOutDir, scanPreview, startRun } from './runManager';
 import { getSettings, setSettings } from './settings';
 
@@ -17,7 +18,11 @@ function asParentDir(value: unknown): string | null {
 function asStartRunRequest(value: unknown): StartRunRequest {
   const raw = value as Partial<StartRunRequest> | null;
   if (raw === null || typeof raw !== 'object') throw new Error('invalid startRun request');
-  return { inputDir: asString(raw.inputDir, 'inputDir') };
+  return {
+    inputDir: asString(raw.inputDir, 'inputDir'),
+    outputParentDir: asParentDir(raw.outputParentDir),
+    createZip: raw.createZip === true,
+  };
 }
 
 export function registerIpc(getWindow: () => BrowserWindow): void {
@@ -74,6 +79,9 @@ export function registerIpc(getWindow: () => BrowserWindow): void {
       ffmpegAvailable: caps.ffmpegAvailable,
       videoEncoder: caps.videoEncoder,
       hdrTonemap: caps.hdrTonemap,
+      appVersion: app.getVersion(),
     };
   });
+
+  ipcMain.handle(IpcChannels.historyList, () => listHistory());
 }

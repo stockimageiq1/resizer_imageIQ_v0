@@ -8,13 +8,20 @@ export const STR = {
   appName: 'IQ Shrink',
   tagline: 'lowres proxies for STOCK IMAGEIQ',
 
+  nav: {
+    newRun: 'New Run',
+    history: 'History',
+    settings: 'Settings',
+    version: (version: string): string => `v${version}`,
+  },
+
   banners: {
     noHeic: 'HEIC decoding is unavailable on this machine — HEIC files will be copied unprocessed.',
     noFfmpeg: 'Bundled ffmpeg is missing — videos will be copied unprocessed.',
   },
 
   drop: {
-    title: 'Drag your project folder here',
+    title: 'Drop your project folder',
     subtitle: 'The folder name becomes the project name.',
     chooseFolder: 'Choose Folder…',
     scanning: 'Scanning…',
@@ -24,21 +31,31 @@ export const STR = {
 
   preview: {
     back: '← choose a different folder',
-    images: 'Images',
-    videos: 'Videos',
-    otherFiles: 'Other files',
-    totalSize: 'Total size',
-    estimatedOutput: 'Estimated output',
-    files: 'Files',
-    estimatedPrefix: '~',
+    photosChip: (count: number): string => `${count} ${count === 1 ? 'photo' : 'photos'}`,
+    videosChip: (count: number): string => `${count} ${count === 1 ? 'video' : 'videos'}`,
+    otherChip: (count: number): string => `${count} other`,
+    estimatedOutput: (size: string): string => `est. output ~${size}`,
     unreadableNote: (count: number): string =>
       `${count} ${count === 1 ? 'entry' : 'entries'} (symlinks/special files) will be reported, not processed.`,
+    saveTo: 'Save to',
+    saveToNextToSource: 'Next to source',
+    saveToChoose: 'Choose location…',
+    saveToChange: 'Change…',
+    rememberChoice: 'Remember this choice',
     createZip: 'Create ZIP for upload',
-    outputLabel: 'Output:',
-    changeLocation: 'Change…',
-    resetLocation: 'Reset to default',
     start: 'Prepare for upload',
     emptyFolder: 'This folder has no processable files.',
+  },
+
+  history: {
+    title: 'History',
+    empty: 'No runs yet — prepare your first folder and it will show up here.',
+    outcomeDone: 'Done',
+    outcomeCancelled: 'Cancelled',
+    outcomeError: 'Error',
+    showInFolder: 'Show in Folder',
+    movedOrDeleted: 'moved or deleted',
+    copiedCount: (count: number): string => `${count} copied unprocessed`,
   },
 
   running: {
@@ -111,6 +128,8 @@ export const STR = {
   settings: {
     open: 'Settings',
     title: 'Settings',
+    saved: 'Saved.',
+    defaultsNote: 'These are the defaults for new runs; the preview step can override save location and ZIP per run.',
     sectionImages: 'Images',
     sectionVideos: 'Videos',
     sectionOutput: 'Output',

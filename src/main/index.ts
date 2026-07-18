@@ -15,10 +15,10 @@ let mainWindow: BrowserWindow | null = null;
 
 function createWindow(): BrowserWindow {
   const win = new BrowserWindow({
-    width: 780,
-    height: 720,
-    minWidth: 560,
-    minHeight: 540,
+    width: 1120,
+    height: 740,
+    minWidth: 900,
+    minHeight: 600,
     title: 'IQ Shrink',
     show: false,
     webPreferences: {
@@ -125,7 +125,7 @@ async function runE2e(win: BrowserWindow, inputDir: string): Promise<void> {
       const preview = await window.iqShrink.scanPreview(dir, null);
 
       const cancelledPromise = waitDone();
-      const start1 = await window.iqShrink.startRun({ inputDir: dir });
+      const start1 = await window.iqShrink.startRun({ inputDir: dir, outputParentDir: null, createZip: true });
       await window.iqShrink.cancelRun();
       const cancelled = start1.started ? await cancelledPromise : { status: 'never-started' };
       const partialGone = start1.started ? !(await window.iqShrink.isDirectory(start1.outDir)) : null;
@@ -137,7 +137,7 @@ async function runE2e(win: BrowserWindow, inputDir: string): Promise<void> {
         if (m.event.type === 'video-progress' && m.event.percent > 0) sawVideoPercent = true;
       });
       const donePromise = waitDone();
-      const start2 = await window.iqShrink.startRun({ inputDir: dir });
+      const start2 = await window.iqShrink.startRun({ inputDir: dir, outputParentDir: null, createZip: true });
       const done = start2.started ? await donePromise : { status: 'never-started', detail: start2 };
       offProgress();
 

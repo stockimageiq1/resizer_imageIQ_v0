@@ -14,6 +14,7 @@ import {
   StartRunResult,
 } from '../shared/ipc';
 import { STR } from '../shared/strings';
+import { appendHistory } from './history';
 import { getSettings } from './settings';
 
 interface ActiveRun {
@@ -110,13 +111,16 @@ export async function startRun(win: BrowserWindow, request: StartRunRequest): Pr
     return { started: false, reason: 'error', message: STR.dialogs.folderNotFound(inputDir) };
   }
 
-  let outDir = resolveOutDir(inputDir, settings.outputParentDir);
+  // save location + ZIP travel with the request (chosen on the preview
+  // screen); processing parameters come from the persisted settings store
+  const createZip = request.createZip;
+  let outDir = resolveOutDir(inputDir, request.outputParentDir);
   if (outDir === inputDir || isInside(inputDir, outDir) || isInside(outDir, inputDir)) {
     return { started: false, reason: 'error', message: STR.dialogs.unsafeOutput };
   }
 
   let overwrite = false;
-  if (await hasCollision(outDir, settings.createZip)) {
+  if (await hasCollision(outDir, createZip)) {
     const choice = await dialog.showMessageBox(win, {
       type: 'question',
       buttons: [STR.dialogs.collision.overwrite, STR.dialogs.collision.keepBoth, STR.dialogs.collision.cancel],
@@ -127,7 +131,7 @@ export async function startRun(win: BrowserWindow, request: StartRunRequest): Pr
     });
     if (choice.response === 2) return { started: false, reason: 'user-cancelled' };
     if (choice.response === 0) overwrite = true;
-    else outDir = await firstFreeVariant(resolveOutDir(inputDir, settings.outputParentDir), settings.createZip);
+    else outDir = await firstFreeVariant(resolveOutDir(inputDir, request.outputParentDir), createZip);
   }
 
   // Pre-scan for the byte map that powers weighted progress + ETA. Also the
@@ -140,7 +144,7 @@ export async function startRun(win: BrowserWindow, request: StartRunRequest): Pr
   let filesDone = 0;
 
   const controller = new AbortController();
-  const zipPath = settings.createZip ? zipPathFor(outDir) : null;
+  const zipPath = createZip ? zipPathFor(outDir) : null;
   active = { controller, outDir, zipPath, inputDir };
 
   const forward = (event: ProgressEvent): void => {
@@ -165,7 +169,7 @@ export async function startRun(win: BrowserWindow, request: StartRunRequest): Pr
   void runShrink({
     inputDir,
     outDir,
-    zip: settings.createZip,
+    zip: createZip,
     overwrite,
     imageMaxDimension: settings.imageMaxDimension,
     jpegQuality: settings.jpegQuality,
@@ -185,9 +189,30 @@ export async function startRun(win: BrowserWindow, request: StartRunRequest): Pr
       if (err instanceof ShrinkError) return { status: 'error', code: err.code, message: err.message };
       return { status: 'error', code: 'UNKNOWN', message: err instanceof Error ? err.message : String(err) };
     })
-    .then((message) => {
+    .then(async (message) => {
       // clear BEFORE notifying, so a renderer reacting to "done" can start the next run
       active = null;
+      try {
+        await appendHistory({
+          timestamp: Date.now(),
+          folderName: path.basename(inputDir),
+          inputPath: inputDir,
+          outcome: message.status,
+          outputPath: outDir,
+          zipPath,
+          copiedUnprocessed: message.status === 'done' ? message.summary.copiedUnprocessed.length : 0,
+          ...(message.status === 'done'
+            ? {
+                inputBytes: message.summary.inputBytes,
+                outputBytes: message.summary.outputBytes,
+                percentSaved: message.summary.percentSaved,
+                elapsedMs: message.summary.elapsedMs,
+              }
+            : {}),
+        });
+      } catch {
+        // history must never break a run
+      }
       send(win, IpcChannels.runDone, message);
     });
 

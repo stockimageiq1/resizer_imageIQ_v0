@@ -15,6 +15,7 @@ export const IpcChannels = {
   settingsSet: 'settings:set',
   isDirectory: 'fs:isDirectory',
   capabilities: 'app:capabilities',
+  historyList: 'history:list',
 } as const;
 
 export interface Settings {
@@ -61,6 +62,8 @@ export interface Capabilities {
   videoEncoder: string;
   /** Bundled ffmpeg supports the HDR→SDR tonemap chain. */
   hdrTonemap: boolean;
+  /** App version from package.json (shown in the sidebar). */
+  appVersion: string;
 }
 
 export interface ScanPreview {
@@ -78,12 +81,40 @@ export interface ScanPreview {
 }
 
 /**
- * Everything except the input folder comes from the persisted Settings store,
- * read by main at start time — so settings changes apply to the NEXT run,
- * never a run already in progress.
+ * The save location and ZIP choice are made on the preview screen and travel
+ * with the request ("Remember this choice" additionally writes them to the
+ * Settings store as the new defaults). Processing parameters (dimensions,
+ * quality, encoders…) still come from the persisted store, read by main at
+ * start time — so settings changes apply to the NEXT run, never a run
+ * already in progress.
  */
 export interface StartRunRequest {
   inputDir: string;
+  /** Parent folder for "{name}_lowres"; null = next to the source folder. */
+  outputParentDir: string | null;
+  createZip: boolean;
+}
+
+/** One finished run (done, cancelled, or error), persisted in userData/history.json. */
+export interface HistoryRecord {
+  /** Completion time, ms since epoch. */
+  timestamp: number;
+  folderName: string;
+  inputPath: string;
+  outcome: 'done' | 'cancelled' | 'error';
+  outputPath: string;
+  zipPath: string | null;
+  copiedUnprocessed: number;
+  /** Present only when outcome is 'done'. */
+  inputBytes?: number;
+  outputBytes?: number;
+  percentSaved?: number;
+  elapsedMs?: number;
+}
+
+/** HistoryRecord enriched at list time with an existence check on outputPath. */
+export interface HistoryEntry extends HistoryRecord {
+  outputExists: boolean;
 }
 
 export type StartRunResult =
@@ -119,6 +150,7 @@ export interface RendererApi {
   setSettings(patch: Partial<Settings>): Promise<Settings>;
   isDirectory(path: string): Promise<boolean>;
   getCapabilities(): Promise<Capabilities>;
+  listHistory(): Promise<HistoryEntry[]>;
   /** Sync: resolves a dropped File to its absolute path (Electron webUtils). */
   getPathForFile(file: File): string;
 }

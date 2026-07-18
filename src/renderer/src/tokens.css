@@ -1,0 +1,75 @@
+/*
+ * STOCK IMAGEIQ design tokens — the SINGLE SOURCE OF TRUTH for color,
+ * shape, depth, and type. No raw color values are allowed anywhere else
+ * (styles.css and components reference these variables only).
+ *
+ * Color rules enforced across the app:
+ *  - Red ONLY for errors and the copied-unprocessed warning. Never decorative.
+ *  - Yellow is never text on light ground: it is a BACKGROUND (CTA pills,
+ *    highlights) with navy text, or an accent on navy chrome.
+ *  - Mint text only on dark; on light surfaces mint appears as background
+ *    chips with --mint-ink text.
+ *  - System output (paths, sizes, file names, counts) renders in --font-mono.
+ */
+:root {
+  /* brand palette */
+  --navy: #1F4876;
+  --navy-deep: #14304F;
+  --yellow: #FFDA70;
+  --mint: #82D6BE;
+  --mint-ink: #0E4B42;
+  --red: #E5484D;
+  --grey: #808080;
+  --white: #FFFFFF;
+
+  /* shape + depth */
+  --radius-card: 24px;
+  --radius-pill: 999px;
+  --shadow-card: 0 24px 60px rgba(0, 0, 0, 0.35); /* promo weight — dark ground only */
+  --shadow-card-soft: 0 10px 28px rgba(20, 48, 79, 0.12); /* light content areas */
+
+  /* type */
+  --font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'SF Mono', ui-monospace, 'Cascadia Code', 'Roboto Mono', Menlo, Consolas, monospace;
+
+  /* semantic — LIGHT theme (design-system guidance: navy is branded
+     chrome, long-staring content screens stay light) */
+  --content-bg: #F5F7FA;
+  --surface: var(--white);
+  --surface-subtle: #EDF1F6;
+  --ink: var(--navy-deep);
+  --ink-muted: #5F6E80;
+  --border: #DCE3EB;
+  --track: #E4EAF1;
+  --card-shadow: var(--shadow-card-soft);
+  --chip-neutral-bg: #EDF1F6;
+  --chip-neutral-ink: #405468;
+  --red-soft-bg: #FDF1F1;
+  --pill-outline-ink: var(--navy);
+  --focus-ring: rgba(31, 72, 118, 0.35);
+  --yellow-glow: rgba(255, 218, 112, 0.5);
+
+  /* sidebar (branded chrome — same in both themes) */
+  --sidebar-gradient: linear-gradient(180deg, var(--navy), var(--navy-deep));
+  --sidebar-active-bg: rgba(255, 255, 255, 0.09);
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.05);
+  --sidebar-ink-muted: rgba(255, 255, 255, 0.55);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --content-bg: var(--navy-deep);
+    --surface: #1B3C63;
+    --surface-subtle: #173453;
+    --ink: var(--white);
+    --ink-muted: #A9BACB;
+    --border: #2E5480;
+    --track: #10263F;
+    --card-shadow: var(--shadow-card);
+    --chip-neutral-bg: #10263F;
+    --chip-neutral-ink: #C7D3DF;
+    --red-soft-bg: #3D2130;
+    --pill-outline-ink: var(--white);
+    --focus-ring: rgba(255, 218, 112, 0.4);
+  }
+}
