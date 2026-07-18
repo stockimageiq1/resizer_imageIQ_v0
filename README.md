@@ -5,6 +5,21 @@ points — a CLI and an Electron desktop app. Produces a lowres proxy tree of an
 input folder (images ≤1024 px JPEG, videos ≤720p H.264, metadata stripped) for
 metadata processing with CSV export.
 
+## Packaging (Milestone 4)
+
+- `npm run package:mac` → `release/IQ Shrink-<version>-<arch>.dmg` (host
+  arch; per-arch dmgs instead of universal — see electron-builder.yml).
+- `npm run package:win` → `release/IQ Shrink Setup <version>.exe` (nsis,
+  x64; cross-buildable from macOS, natively built + runtime-verified in CI).
+- CI: pushing a `v*` tag builds mac (arm64+x64) and windows installers and
+  attaches them to a draft GitHub Release (.github/workflows/release.yml).
+- v1 ships unsigned — user-facing Gatekeeper/SmartScreen steps in
+  docs/INSTALL.md; Windows runtime checklist in docs/WINDOWS_TEST.md.
+- ffmpeg is asarUnpack'd and path-rewritten (`ffmpegPath()`); a startup
+  assertion verifies every bundled binary and shows an error dialog if
+  missing. Auto-update: ON for Windows, OFF for macOS until signing lands
+  (`src/main/updater.ts`).
+
 ## Desktop app
 
 - `npm run dev` — Electron + vite dev mode (HMR)

@@ -1,0 +1,68 @@
+# Release pipeline: push a tag `v*` (e.g. v0.1.0) to build installers and
+# attach them to a DRAFT GitHub Release for manual review + publish.
+#
+# Required settings once this repo has a GitHub remote:
+#   - No secrets needed: electron-builder publishes with the workflow's
+#     automatic GITHUB_TOKEN (granted `contents: write` below).
+#   - electron-builder.yml `publish.owner/repo` must match this repository.
+#   - Unsigned v1: no signing certs configured. When the Apple Developer
+#     cert lands: add CSC_LINK / CSC_KEY_PASSWORD secrets, set mac.identity
+#     + notarization in electron-builder.yml, and flip the macOS auto-update
+#     flag in src/main/updater.ts (the documented one-step change).
+#
+# Each platform builds natively — this is what resolves the sharp
+# cross-compile question cleanly (windows-latest fetches win32-x64 sharp
+# binaries itself). The mac x64 leg runs on the arm64 runner and swaps the
+# two arch-specific binary sets explicitly.
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  mac:
+    runs-on: macos-latest # arm64 host
+    strategy:
+      matrix:
+        arch: [arm64, x64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Swap bundled binaries to x64 (cross-arch leg)
+        if: matrix.arch == 'x64'
+        # ffmpeg-static's install.js honors npm_config_arch when run
+        # directly (npm itself strips unknown npm_config_* env vars, so
+        # `npm rebuild` cannot do this). The binary must be deleted first —
+        # install.js skips the download when one already exists.
+        run: |
+          rm node_modules/ffmpeg-static/ffmpeg
+          npm_config_arch=x64 node node_modules/ffmpeg-static/install.js
+          npm install --no-save --force @img/sharp-darwin-x64 @img/sharp-libvips-darwin-x64
+      - run: npm run typecheck
+      - name: Engine tests (host arch only — they spawn the bundled ffmpeg)
+        if: matrix.arch == 'arm64'
+        run: npm test
+      - run: npx electron-vite build
+      - run: npx electron-builder --mac dmg --${{ matrix.arch }} --publish always
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npx electron-vite build
+      - run: npx electron-builder --win nsis --x64 --publish always
