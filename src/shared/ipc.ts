@@ -34,6 +34,8 @@ export interface Settings {
   keepAudio: boolean;
   /** Use the probed hardware encoder (auto-fallback to software). OFF forces libx264. */
   hardwareAcceleration: boolean;
+  /** Theme: dark = Frame Picker navy gradient (default), light = webapp-aligned, system = follow OS. */
+  appearance: 'dark' | 'light' | 'system';
 }
 
 export const SETTING_RANGES = {
@@ -52,6 +54,7 @@ export const DEFAULT_SETTINGS: Settings = {
   videoCrf: 27,
   keepAudio: false,
   hardwareAcceleration: true,
+  appearance: 'dark',
 };
 
 export interface Capabilities {

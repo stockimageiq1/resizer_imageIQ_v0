@@ -1,5 +1,5 @@
 import { promises as fs } from 'node:fs';
-import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, nativeTheme, shell } from 'electron';
 import { engineCapabilities } from '../engine/capabilities';
 import { Capabilities, IpcChannels, Settings, StartRunRequest } from '../shared/ipc';
 import { cancelRun, resolveOutDir, scanPreview, startRun } from './runManager';
@@ -58,9 +58,11 @@ export function registerIpc(getWindow: () => BrowserWindow): void {
 
   ipcMain.handle(IpcChannels.settingsGet, (): Promise<Settings> => getSettings());
 
-  ipcMain.handle(IpcChannels.settingsSet, (_event, patch: unknown): Promise<Settings> => {
+  ipcMain.handle(IpcChannels.settingsSet, async (_event, patch: unknown): Promise<Settings> => {
     if (patch === null || typeof patch !== 'object') throw new Error('invalid settings patch');
-    return setSettings(patch as Partial<Settings>);
+    const next = await setSettings(patch as Partial<Settings>);
+    nativeTheme.themeSource = next.appearance; // appearance applies immediately
+    return next;
   });
 
   ipcMain.handle(IpcChannels.isDirectory, async (_event, target: unknown) => {

@@ -1,10 +1,11 @@
 import { constants as fsConstants, promises as fs } from 'node:fs';
 import * as path from 'node:path';
-import { app, BrowserWindow, dialog, Menu } from 'electron';
+import { app, BrowserWindow, dialog, Menu, nativeTheme } from 'electron';
 import { ffmpegPath } from '../engine/videoProcessor';
 import { STR } from '../shared/strings';
 import { registerIpc } from './ipc';
 import { anyRunActive, cancelRun } from './runManager';
+import { getSettings } from './settings';
 import { initAutoUpdater } from './updater';
 
 const smokeTest = process.argv.includes('--smoke-test');
@@ -70,6 +71,12 @@ async function assertBundledBinaries(): Promise<void> {
 
 void app.whenReady().then(async () => {
   Menu.setApplicationMenu(null); // single window, no menus
+  // Appearance setting drives prefers-color-scheme via nativeTheme (default
+  // dark = the Frame Picker look); settings changes re-apply it live.
+  nativeTheme.themeSource = (await getSettings()).appearance;
+  // dev harness override so both palettes can be smoke-rendered in CI
+  if (process.argv.includes('--theme=dark')) nativeTheme.themeSource = 'dark';
+  if (process.argv.includes('--theme=light')) nativeTheme.themeSource = 'light';
   // History feature was removed — silently clear any leftover store
   await fs.rm(path.join(app.getPath('userData'), 'history.json'), { force: true }).catch(() => undefined);
   await assertBundledBinaries();

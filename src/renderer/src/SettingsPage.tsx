@@ -56,6 +56,28 @@ export function SettingsPage(props: {
       <h1>{STR.settings.title}</h1>
       <p className="muted">{STR.settings.defaultsNote}</p>
 
+      <h2 className="section-label">{STR.settings.sectionAppearance}</h2>
+      <div className="chip-row">
+        {(
+          [
+            ['dark', STR.settings.appearanceDark],
+            ['light', STR.settings.appearanceLight],
+            ['system', STR.settings.appearanceSystem],
+          ] as const
+        ).map(([value, label]) => (
+          <label key={value} className="toggle">
+            <input
+              type="radio"
+              name="appearance"
+              checked={draft.appearance === value}
+              onChange={() => setDraft({ ...draft, appearance: value })}
+            />
+            {label}
+          </label>
+        ))}
+        <span className="field-hint">{STR.settings.appearanceHint}</span>
+      </div>
+
       <h2 className="section-label">{STR.settings.sectionImages}</h2>
       <NumberField
         label={STR.settings.imageMaxDimension}

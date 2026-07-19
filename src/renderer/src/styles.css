@@ -70,14 +70,15 @@ body {
   margin: 0 auto;
 }
 
-/* echoes the STOCK lettering inside the logo art */
+/* echoes the STOCK lettering inside the logo art; theme-scoped — dark uses
+   the Frame Picker module-name treatment (yellow spaced caps) */
 .brand-subtitle {
   text-transform: uppercase;
-  font-size: 10.5px;
+  font-size: var(--lockup-sub-size);
   font-weight: 600;
-  letter-spacing: 0.25em;
-  margin-right: -0.25em; /* cancel the trailing tracking space for true centering */
-  color: var(--sidebar-lockup-ink);
+  letter-spacing: var(--lockup-sub-spacing);
+  margin-right: calc(-1 * var(--lockup-sub-spacing)); /* cancel trailing tracking for true centering */
+  color: var(--lockup-sub-ink);
 }
 
 .nav-items {
@@ -187,6 +188,7 @@ body {
 .card {
   background: var(--card-bg);
   color: var(--card-ink);
+  border: 1px solid var(--card-line); /* hairline in light; transparent in dark (FP) */
   border-radius: var(--radius);
   box-shadow: var(--shadow-card);
   padding: 2rem;
@@ -339,7 +341,7 @@ body {
 .chip {
   display: inline-flex;
   align-items: center;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-chip); /* pill in dark (FP), 3px badge in light (webapp) */
   padding: 0.2rem 0.75rem;
   font-size: 0.8rem;
   font-weight: 600;

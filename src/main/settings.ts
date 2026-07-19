@@ -23,6 +23,9 @@ function sanitize(patch: Partial<Settings>): Partial<Settings> {
   if (typeof patch.createZip === 'boolean') clean.createZip = patch.createZip;
   if (typeof patch.keepAudio === 'boolean') clean.keepAudio = patch.keepAudio;
   if (typeof patch.hardwareAcceleration === 'boolean') clean.hardwareAcceleration = patch.hardwareAcceleration;
+  if (patch.appearance === 'dark' || patch.appearance === 'light' || patch.appearance === 'system') {
+    clean.appearance = patch.appearance;
+  }
   if (patch.outputParentDir === null || typeof patch.outputParentDir === 'string') {
     clean.outputParentDir = patch.outputParentDir;
   }
