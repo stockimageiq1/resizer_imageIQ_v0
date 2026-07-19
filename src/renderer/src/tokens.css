@@ -3,102 +3,71 @@
  * shape, depth, and type. No raw color values are allowed anywhere else
  * (styles.css and components reference these variables only).
  *
- * Values aligned with the webapp (frontend_imageIQ_v1, app/globals.css
- * "Account page design system" + component classes): Geist type, 5px
- * hairline-bordered cards on #f6f7f9, 6px rectangular buttons with
- * #193c63 navy hover, 3px badges, mint focus rings, dot+text status.
+ * Direction: the shared desktop-app brand palette (navy gradient chrome,
+ * white cards with soft depth, yellow CTA, mint success) — same :root
+ * block as the Frame Picker. Single theme; the gradient ground IS the
+ * dark-leaning look, so there is no separate dark variant.
  *
  * Color rules enforced across the app:
  *  - Red ONLY for errors and the copied-unprocessed warning. Never decorative.
  *  - Yellow is never text on light ground: it is a BACKGROUND (CTA,
  *    highlights) with navy text, or an accent on navy chrome.
- *  - Mint text only on dark; on light surfaces mint appears as background
- *    chips/bands with --mint-ink text.
+ *  - Mint appears as background fills with --mint-ink/--success-ink text.
  *  - System output (paths, sizes, file names, counts) renders in --font-mono.
  */
 
-/* Geist — vendored variable font (no runtime network fetch). Same family
-   the webapp loads from Google Fonts; latin-ext included for Slovenian. */
-@font-face {
-  font-family: 'Geist';
-  src: url('./fonts/geist-latin.woff2') format('woff2');
-  font-weight: 400 800;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
-    U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: 'Geist';
-  src: url('./fonts/geist-latin-ext.woff2') format('woff2');
-  font-weight: 400 800;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308,
-    U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113,
-    U+2C60-2C7F, U+A720-A7FF;
-}
-
 :root {
-  /* brand palette */
-  --navy: #1F4876;
-  --navy-deep: #14304F;
-  --navy-hover: #193C63; /* webapp --color-brand-navy-hover */
-  --yellow: #FFDA70;
-  --mint: #82D6BE;
-  --mint-ink: #0E4B42;
-  --red: #C0392B; /* webapp --color-brand-error */
-  --grey: #808080;
-  --white: #FFFFFF;
+  /* ---- STOCK IMAGEIQ brand palette ---- */
+  --navy:       #1F4876;  /* chrome / background (gradient top) */
+  --navy-deep:  #14304F;  /* gradient bottom, depth */
+  --yellow:     #FFDA70;  /* accent · CTA · primary output · active */
+  --mint:       #82D6BE;  /* positive · confirmed · success */
+  --mint-ink:   #0E4B42;  /* text ON mint fills */
+  --red:        #E5484D;  /* ERRORS ONLY — never decorative */
+  --grey:       #808080;  /* secondary text */
+  --white:      #FFFFFF;  /* cards */
 
-  /* shape — webapp: cards rounded-[5px], buttons rounded-md, badges rounded-[3px] */
-  --radius-card: 5px;
-  --radius-button: 6px;
-  --radius-tag: 3px;
-  --radius-pill: 999px; /* dots + progress tracks only (webapp rounded-full) */
+  /* ---- surfaces & text (eye comfort over long sessions) ---- */
+  --bg:            linear-gradient(180deg, var(--navy), var(--navy-deep));
+  --text:          #EAF0F7;  /* off-white on navy — softer than pure #FFF */
+  --text-dim:      #9DB0C6;  /* muted secondary on navy */
+  --card-bg:       var(--white);
+  --card-ink:      #16324F;  /* text on white cards */
+  --card-ink-dim:  #5E7690;  /* muted text on white cards */
 
-  /* type — Geist per the webapp's dashboard/account pages */
-  --font-sans: 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: 'SF Mono', ui-monospace, 'Cascadia Code', 'Roboto Mono', Menlo, Consolas, monospace;
+  /* ---- semantic roles ---- */
+  --accent:      var(--yellow);
+  --accent-ink:  var(--navy-deep);  /* text on yellow buttons */
+  --success:     var(--mint);
+  --success-ink: var(--mint-ink);
+  --error:       var(--red);
 
-  /* semantic — LIGHT theme (webapp: white cards, hairline borders, #f6f7f9 page) */
-  --content-bg: #F6F7F9; /* webapp --color-brand-surface */
-  --surface: var(--white);
-  --surface-subtle: #EEF3F9; /* webapp --color-brand-tint */
-  --ink: var(--navy-deep);
-  --ink-muted: #808080; /* webapp brand-grey secondary text */
-  --ink-faint: #9AA3B2; /* webapp brand-muted small print */
-  --border: #E0E4EA; /* webapp --color-brand-border-soft (app-wide card/input border) */
-  --track: #E4EAF1;
-  --card-shadow: 0 1px 2px rgba(20, 48, 79, 0.05); /* flat, hairline-bordered */
-  --red-soft-bg: #FDF1F1;
-  --btn-outline-ink: var(--navy);
-  --focus-ring: rgba(130, 214, 190, 0.35); /* webapp .iq-field mint ring */
+  /* ---- shape & depth ---- */
+  --radius:      24px;
+  --radius-sm:   12px;
+  --radius-pill: 999px;
+  --shadow-card: 0 24px 60px rgba(0,0,0,.35);
 
-  /* sidebar (branded chrome — same in both themes) */
-  --sidebar-gradient: linear-gradient(180deg, var(--navy), var(--navy-deep));
-  --sidebar-active-bg: rgba(255, 255, 255, 0.09);
-  --sidebar-hover-bg: rgba(255, 255, 255, 0.05);
-  --sidebar-ink-muted: rgba(255, 255, 255, 0.55);
+  /* ---- type (system stacks — native, offline, no Google Fonts) ---- */
+  --font-ui:   -apple-system, "SF Pro Text", "Segoe UI", Inter, system-ui, sans-serif;
+  --font-mono: "SF Mono", "Cascadia Code", "Roboto Mono", ui-monospace, monospace;
+
+  /* ---- derived (hover states + surface tints; keep in sync with palette) ---- */
+  --yellow-hover: #FFE38F;
+  --navy-hover:   #193C63;
+  --yellow-glow:  rgba(255, 218, 112, 0.5);   /* dropzone active halo */
+  --chrome-line:  rgba(255, 255, 255, 0.1);   /* hairlines on navy chrome */
+  --ink-line:     rgba(31, 72, 118, 0.18);    /* hairlines on white cards */
+  --ink-fill:     rgba(31, 72, 118, 0.07);    /* subtle panels on white cards */
+  --track:        #E4EAF1;                    /* progress track on white cards */
+  --red-soft-bg:  #FDF1F1;                    /* error panel fill on white cards */
+  --focus-ring-card:   rgba(31, 72, 118, 0.35);  /* focus on white cards */
+  --focus-ring-chrome: rgba(255, 218, 112, 0.55); /* focus on navy chrome */
+
+  /* ---- sidebar (navy chrome) ---- */
+  --sidebar-bg:         rgba(0, 0, 0, 0.16);
+  --sidebar-active-bg:  rgba(255, 255, 255, 0.09);
+  --sidebar-hover-bg:   rgba(255, 255, 255, 0.05);
+  --sidebar-ink-muted:  rgba(255, 255, 255, 0.55);
   --sidebar-lockup-ink: rgba(255, 255, 255, 0.88); /* RESIZER lockup line */
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --content-bg: var(--navy-deep);
-    --surface: #1B3C63;
-    --surface-subtle: #173453;
-    --ink: var(--white);
-    --ink-muted: #A9BACB;
-    --ink-faint: #8296AB;
-    --border: #2E5480;
-    --track: #10263F;
-    --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); /* same flatness, translated */
-    /* hue-preserved lighter brand-error: #C0392B is 2.7:1 on dark surfaces
-       (illegible); this holds ~4.7:1 on the red-soft backgrounds where
-       body-size red text appears */
-    --red: #E5705F;
-    --red-soft-bg: #3D2130;
-    --btn-outline-ink: var(--white);
-  }
 }
