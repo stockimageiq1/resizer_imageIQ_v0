@@ -47,7 +47,7 @@
   --yellow: #FFDA70;
   --mint: #82D6BE;
   --mint-ink: #0E4B42;
-  --red: #E5484D;
+  --red: #C0392B; /* webapp --color-brand-error */
   --grey: #808080;
   --white: #FFFFFF;
 
@@ -94,6 +94,10 @@
     --border: #2E5480;
     --track: #10263F;
     --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); /* same flatness, translated */
+    /* hue-preserved lighter brand-error: #C0392B is 2.7:1 on dark surfaces
+       (illegible); this holds ~4.7:1 on the red-soft backgrounds where
+       body-size red text appears */
+    --red: #E5705F;
     --red-soft-bg: #3D2130;
     --btn-outline-ink: var(--white);
   }
