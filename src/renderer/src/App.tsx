@@ -117,9 +117,16 @@ export function App(): React.JSX.Element {
 
   return (
     <div className="app">
-      <Sidebar page={page} onNavigate={setPage} version={capabilities?.appVersion ?? null} />
+      {/* FP-style top bar — visible in dark theme only (CSS-scoped) */}
+      <header className="topbar">
+        <span className="brand-main">{STR.brandName}</span>
+        <span className="brand-sub">{STR.nav.subtitle}</span>
+      </header>
 
-      <div className="content">
+      <div className="app-body">
+        <Sidebar page={page} onNavigate={setPage} version={capabilities?.appVersion ?? null} />
+
+        <div className="content">
         {capabilities !== null && !capabilities.heicSupported && (
           <div className="banner warn">{STR.banners.noHeic}</div>
         )}
@@ -177,6 +184,7 @@ export function App(): React.JSX.Element {
           )}
 
           {page === 'settings' && <SettingsPage settings={settings} onSaved={setSettings} />}
+          </div>
         </div>
       </div>
     </div>

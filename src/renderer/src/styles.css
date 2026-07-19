@@ -25,11 +25,63 @@ body {
   font-family: var(--font-mono);
 }
 
-/* ---------- layout: navy chrome, cards float on the gradient ---------- */
+/* ---------- layout: top bar (dark/FP) over sidebar + content ---------- */
 
 .app {
   height: 100%;
   display: flex;
+  flex-direction: column;
+}
+
+.app-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+/* FP TopBar: slim bar across the whole window; text lockup lives here in
+   dark. Light theme hides it (sidebar logo lockup carries the brand). */
+.topbar {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  height: 48px;
+  padding: 14px 14px 0;
+  border-bottom: 1px solid var(--chrome-line);
+  flex: none;
+  white-space: nowrap;
+}
+
+.brand-main {
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  font-size: 13px;
+  color: var(--text);
+  text-transform: uppercase;
+}
+
+.brand-sub {
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  font-size: 11px;
+  color: var(--accent); /* yellow accent on navy chrome */
+  text-transform: uppercase;
+}
+
+@media (prefers-color-scheme: light) {
+  .topbar {
+    display: none;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  /* nav items only in the dark sidebar — the top bar carries the brand */
+  .brand-block {
+    display: none;
+  }
+  .sidebar {
+    padding-top: 0.6rem;
+  }
 }
 
 .sidebar {
@@ -171,6 +223,13 @@ body {
   }
 }
 
+@media (max-width: 1000px) and (prefers-color-scheme: dark) {
+  /* dark rail: nav only — the top bar already carries the brand */
+  .brand-mark {
+    display: none;
+  }
+}
+
 /* ---------- banners ---------- */
 
 .banner {
@@ -279,7 +338,7 @@ body {
 }
 
 .btn-outline:not(:disabled):hover {
-  background: var(--ink-fill);
+  background: var(--ink-hover);
 }
 
 .btn-grey {
@@ -292,10 +351,31 @@ body {
   font-size: 0.95rem;
 }
 
+@media (prefers-color-scheme: dark) {
+  /* FP button spec: 12px type, 6px 12px padding, primary 6px 22px */
+  .btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  .cta {
+    padding: 6px 22px;
+    font-size: 12px;
+  }
+  /* navy solids don't exist on a navy gradient — primary actions go yellow */
+  .btn-navy {
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-weight: 700;
+  }
+  .btn-navy:not(:disabled):hover {
+    background: var(--yellow-hover);
+  }
+}
+
 .linklike {
   background: none;
   border: none;
-  color: var(--navy);
+  color: var(--link-ink);
   padding: 0;
   font: inherit;
   font-size: 0.85rem;
@@ -327,7 +407,7 @@ body {
 }
 
 .status-dot.navy {
-  background: var(--navy);
+  background: var(--dot-neutral);
 }
 
 .status-dot.grey {
@@ -378,7 +458,7 @@ body {
 
 .dropzone:hover,
 .dropzone.hover {
-  border-color: var(--navy);
+  border-color: var(--dropzone-hover-line);
 }
 
 .dropzone.hover {
@@ -386,7 +466,7 @@ body {
 }
 
 .drop-icon {
-  color: var(--navy);
+  color: var(--icon-ink); /* light/translucent on dark, navy on light */
 }
 
 .drop-title {
@@ -398,7 +478,7 @@ body {
 .inline-error {
   color: var(--error);
   background: var(--red-soft-bg);
-  border: 1px solid var(--error);
+  border: 1px solid var(--red-line);
   border-radius: var(--radius-sm);
   padding: 0.5rem 0.8rem;
   font-size: 0.85rem;
@@ -445,7 +525,7 @@ body {
 }
 
 .radio-row input {
-  accent-color: var(--navy);
+  accent-color: var(--control-accent);
   margin-top: 0.25rem;
 }
 
@@ -471,7 +551,7 @@ body {
 }
 
 .toggle input {
-  accent-color: var(--navy);
+  accent-color: var(--control-accent);
   width: 1rem;
   height: 1rem;
 }
@@ -544,8 +624,9 @@ body {
 }
 
 .done-band {
-  background: var(--success);
-  color: var(--success-ink);
+  background: var(--done-band-bg);
+  color: var(--done-band-ink);
+  border-bottom: 1px solid var(--done-band-line);
   margin: 0 -2rem;
   padding: 1.8rem 2rem;
   display: flex;
@@ -565,7 +646,7 @@ body {
 
 /* red allowed: copied-unprocessed warning — never collapsed */
 .copied-warning {
-  border: 1px solid var(--error);
+  border: 1px solid var(--red-line);
   border-radius: var(--radius-sm);
   padding: 1rem 1.1rem;
   background: var(--red-soft-bg);
@@ -617,7 +698,7 @@ body {
   grid-area: input;
   font-family: var(--font-mono);
   font-size: 0.9rem;
-  background: var(--card-bg);
+  background: var(--field-bg);
   color: var(--card-ink);
   border: 1px solid var(--ink-line);
   border-radius: var(--radius-sm);
@@ -627,7 +708,7 @@ body {
 }
 
 .field input[type='number']:focus {
-  border-color: var(--navy);
+  border-color: var(--field-focus-line);
   outline: none;
   box-shadow: 0 0 0 2px var(--focus-ring-card);
 }

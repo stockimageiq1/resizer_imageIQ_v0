@@ -54,14 +54,15 @@
   --grey:       #808080;  /* secondary text */
   --white:      #FFFFFF;  /* cards */
 
-  /* ---- DARK (default): Frame Picker ---- */
+  /* ---- DARK (default): Frame Picker's actual on-screen language —
+     NO white cards; translucent dark panels sit directly on the gradient ---- */
   --bg:            linear-gradient(180deg, var(--navy), var(--navy-deep));
   --text:          #EAF0F7;  /* off-white on navy — softer than pure #FFF */
   --text-dim:      #9DB0C6;  /* muted secondary on navy */
-  --card-bg:       var(--white);
-  --card-ink:      #16324F;  /* text on white cards */
-  --card-ink-dim:  #5E7690;  /* muted text on white cards */
-  --card-line:     transparent; /* FP cards carry depth via shadow, not border */
+  --card-bg:       rgba(255, 255, 255, 0.07); /* FP panel fill (.06–.08 band) */
+  --card-ink:      var(--text);
+  --card-ink-dim:  var(--text-dim);
+  --card-line:     rgba(255, 255, 255, 0.1);  /* FP chrome hairline */
 
   /* semantic roles */
   --accent:      var(--yellow);
@@ -70,12 +71,12 @@
   --success-ink: var(--mint-ink);
   --error:       #E5484D; /* FP brand red (light theme uses webapp #C0392B) */
 
-  /* shape & depth — FP: 24/12, promo shadow */
-  --radius:      24px;
+  /* shape & depth — FP panel scale: 12px, no drop shadows */
+  --radius:      12px;
   --radius-sm:   12px;
   --radius-chip: var(--radius-pill);
   --radius-pill: 999px;
-  --shadow-card: 0 24px 60px rgba(0, 0, 0, 0.35);
+  --shadow-card: none;
 
   /* type — FP: native system stacks */
   --font-ui:   -apple-system, 'SF Pro Text', 'Segoe UI', Inter, system-ui, sans-serif;
@@ -86,12 +87,28 @@
   --navy-hover:   #193C63;
   --yellow-glow:  rgba(255, 218, 112, 0.5);
   --chrome-line:  rgba(255, 255, 255, 0.1);  /* hairlines on navy chrome */
-  --ink-line:     rgba(31, 72, 118, 0.18);   /* hairlines on white cards */
-  --ink-fill:     rgba(31, 72, 118, 0.07);   /* subtle panels on white cards */
-  --track:        #E4EAF1;
-  --red-soft-bg:  #FDF1F1;
-  --focus-ring-card:   rgba(31, 72, 118, 0.35);
+  --ink-line:     rgba(255, 255, 255, 0.1);  /* FP .btn border (chrome-line) */
+  --ink-fill:     rgba(255, 255, 255, 0.08); /* FP .btn fill (chrome-fill) */
+  --ink-hover:    rgba(255, 255, 255, 0.14); /* FP .btn hover (chrome-hover) */
+  --track:        rgba(20, 48, 79, 0.6);     /* FP .fps-select field fill */
+  --red-soft-bg:  rgba(229, 72, 77, 0.12);   /* translucent tinted panel */
+  --red-line:     rgba(229, 72, 77, 0.55);
+  --focus-ring-card:   rgba(255, 218, 112, 0.55); /* yellow reads on panels */
   --focus-ring-chrome: rgba(255, 218, 112, 0.55);
+
+  /* semantic tinted panels (FP chip treatment at panel scale) */
+  --done-band-bg:   rgba(130, 214, 190, 0.16);
+  --done-band-ink:  var(--mint); /* mint text allowed on dark */
+  --done-band-line: rgba(130, 214, 190, 0.4);
+
+  /* per-theme control/iconography inks */
+  --link-ink:           var(--mint);
+  --dot-neutral:        var(--text-dim);
+  --icon-ink:           var(--text-dim); /* folder glyph light/translucent on dark */
+  --dropzone-hover-line: var(--accent);
+  --field-bg:           rgba(20, 48, 79, 0.6); /* FP .fps-select */
+  --field-focus-line:   var(--accent);
+  --control-accent:     var(--accent);
 
   /* sidebar (translucent over the gradient, FP chrome treatment) */
   --sidebar-bg:         rgba(0, 0, 0, 0.16);
@@ -126,9 +143,27 @@
 
     --font-ui: 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
-    --ink-line: #E0E4EA;
-    --ink-fill: #EEF3F9; /* webapp tint */
+    --ink-line:  #E0E4EA;
+    --ink-fill:  #EEF3F9; /* webapp tint */
+    --ink-hover: #E4EAF1;
+    --track:     #E4EAF1;
+    --red-soft-bg: #FDF1F1;
+    --red-line:    #C0392B;
     --focus-ring-card: rgba(130, 214, 190, 0.35); /* webapp mint ring */
+
+    /* done band: solid mint with mint-ink text (mint text never on light) */
+    --done-band-bg:   var(--mint);
+    --done-band-ink:  var(--mint-ink);
+    --done-band-line: transparent;
+
+    /* per-theme control/iconography inks */
+    --link-ink:            var(--navy);
+    --dot-neutral:         var(--navy);
+    --icon-ink:            var(--navy);
+    --dropzone-hover-line: var(--navy);
+    --field-bg:            var(--white);
+    --field-focus-line:    var(--mint); /* webapp .iq-field */
+    --control-accent:      var(--navy);
 
     /* branded navy chrome stays in light — solid gradient sidebar */
     --sidebar-bg: linear-gradient(180deg, var(--navy), var(--navy-deep));
