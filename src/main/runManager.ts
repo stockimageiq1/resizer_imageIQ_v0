@@ -120,16 +120,23 @@ export async function startRun(win: BrowserWindow, request: StartRunRequest): Pr
 
   let overwrite = false;
   if (await hasCollision(outDir, createZip)) {
+    // Cancel is ARRAY INDEX 0 on purpose: when the native dialog resolves
+    // without an explicit click (unfocused/programmatic launches), it
+    // empirically returns response 0 regardless of defaultId — so the safe
+    // answer must live at index 0. Overwrite only ever happens from a real
+    // click. On macOS the first array entry renders as the rightmost
+    // primary button, so the visual order stays Overwrite / Keep Both /
+    // Cancel left-to-right, with Cancel as the safe Return-key default.
     const choice = await dialog.showMessageBox(win, {
       type: 'question',
-      buttons: [STR.dialogs.collision.overwrite, STR.dialogs.collision.keepBoth, STR.dialogs.collision.cancel],
+      buttons: [STR.dialogs.collision.cancel, STR.dialogs.collision.keepBoth, STR.dialogs.collision.overwrite],
       defaultId: 0,
-      cancelId: 2,
+      cancelId: 0,
       message: STR.dialogs.collision.message(path.basename(outDir)),
       detail: STR.dialogs.collision.detail,
     });
-    if (choice.response === 2) return { started: false, reason: 'user-cancelled' };
-    if (choice.response === 0) overwrite = true;
+    if (choice.response === 0) return { started: false, reason: 'user-cancelled' };
+    if (choice.response === 2) overwrite = true;
     else outDir = await firstFreeVariant(resolveOutDir(inputDir, request.outputParentDir), createZip);
   }
 
