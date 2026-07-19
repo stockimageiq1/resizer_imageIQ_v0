@@ -142,10 +142,10 @@ export function SettingsPage(props: {
       <p className="muted">{STR.settings.appliesNextRun}</p>
 
       <div className="button-row">
-        <button className="pill pill-grey" onClick={() => setDraft({ ...DEFAULT_SETTINGS })}>
+        <button className="btn btn-grey" onClick={() => setDraft({ ...DEFAULT_SETTINGS })}>
           {STR.settings.resetAll}
         </button>
-        <button className="pill pill-navy" onClick={save}>
+        <button className="btn btn-navy" onClick={save}>
           {STR.settings.save}
         </button>
         {savedNote && <span className="chip chip-mint">{STR.settings.saved}</span>}

@@ -1,6 +1,6 @@
 import { constants as fsConstants, promises as fs } from 'node:fs';
 import * as path from 'node:path';
-import { app, BrowserWindow, dialog, Menu } from 'electron';
+import { app, BrowserWindow, dialog, Menu, nativeTheme } from 'electron';
 import { ffmpegPath } from '../engine/videoProcessor';
 import { STR } from '../shared/strings';
 import { registerIpc } from './ipc';
@@ -8,6 +8,9 @@ import { anyRunActive, cancelRun } from './runManager';
 import { initAutoUpdater } from './updater';
 
 const smokeTest = process.argv.includes('--smoke-test');
+// dev harness: force a theme so both palettes can be smoke-rendered in CI
+if (process.argv.includes('--theme=dark')) nativeTheme.themeSource = 'dark';
+if (process.argv.includes('--theme=light')) nativeTheme.themeSource = 'light';
 const e2eFlagIndex = process.argv.indexOf('--e2e');
 const e2eInputDir = e2eFlagIndex >= 0 ? process.argv[e2eFlagIndex + 1] : undefined;
 

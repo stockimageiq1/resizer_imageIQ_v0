@@ -160,9 +160,12 @@ export function App(): React.JSX.Element {
               )}
               {screen.kind === 'cancelled' && (
                 <main className="card centered">
-                  <h1>{STR.cancelled.title}</h1>
+                  <h1 className="status-row">
+                    <span className="status-dot grey" />
+                    {STR.cancelled.title}
+                  </h1>
                   <p className="muted">{STR.cancelled.body}</p>
-                  <button className="pill pill-outline" onClick={() => setScreen({ kind: 'idle' })}>
+                  <button className="btn btn-outline" onClick={() => setScreen({ kind: 'idle' })}>
                     {STR.cancelled.back}
                   </button>
                 </main>
@@ -205,9 +208,11 @@ function Sidebar(props: { page: Page; onNavigate: (page: Page) => void; version:
   return (
     <nav className="sidebar">
       <div className="brand-block">
-        <img className="brand-logo" src={logoWhite} alt={STR.brandName} />
+        <div className="brand-lockup">
+          <img className="brand-logo" src={logoWhite} alt={STR.brandName} />
+          <div className="brand-subtitle">{STR.nav.subtitle}</div>
+        </div>
         <img className="brand-mark" src={markIqWhite} alt={STR.brandName} />
-        <div className="brand-subtitle">{STR.nav.subtitle}</div>
       </div>
       <div className="nav-items">
         {items.map((item) => (
@@ -270,7 +275,7 @@ function DropScreen(props: {
       <h1 className="drop-title">{STR.drop.title}</h1>
       <p className="muted">{STR.drop.subtitle}</p>
       <button
-        className="pill pill-navy"
+        className="btn btn-navy"
         disabled={props.busy}
         onClick={() => {
           void (async () => {
@@ -327,10 +332,19 @@ function PreviewScreen(props: {
       <div className="preview-header">
         <h1 className="mono folder-name">{preview.folderName}</h1>
         <div className="chip-row">
-          <span className="chip chip-neutral mono">{STR.preview.photosChip(preview.imageCount)}</span>
-          <span className="chip chip-neutral mono">{STR.preview.videosChip(preview.videoCount)}</span>
+          <span className="status-row">
+            <span className="status-dot navy" />
+            <span className="mono count-text">{STR.preview.photosChip(preview.imageCount)}</span>
+          </span>
+          <span className="status-row">
+            <span className="status-dot navy" />
+            <span className="mono count-text">{STR.preview.videosChip(preview.videoCount)}</span>
+          </span>
           {preview.otherCount > 0 && (
-            <span className="chip chip-neutral mono">{STR.preview.otherChip(preview.otherCount)}</span>
+            <span className="status-row">
+              <span className="status-dot grey" />
+              <span className="mono count-text">{STR.preview.otherChip(preview.otherCount)}</span>
+            </span>
           )}
           <span className="mono total-size">{formatBytes(preview.totalBytes)}</span>
         </div>
@@ -373,7 +387,7 @@ function PreviewScreen(props: {
       </label>
 
       <button
-        className="pill pill-yellow cta"
+        className="btn btn-yellow cta"
         disabled={props.busy || preview.totalFiles === 0}
         onClick={() => props.onStart({ outputParentDir: parentDir, createZip, remember })}
       >
@@ -442,7 +456,7 @@ function RunningScreen(props: {
       </div>
 
       {!confirmingCancel && !cancelRequested && (
-        <button className="pill pill-grey" onClick={() => setConfirmingCancel(true)}>
+        <button className="btn btn-grey" onClick={() => setConfirmingCancel(true)}>
           {STR.running.cancel}
         </button>
       )}
@@ -450,7 +464,7 @@ function RunningScreen(props: {
         <div className="confirm-row">
           <span className="confirm-warning">{STR.running.cancelConfirm}</span>
           <button
-            className="pill pill-grey confirm-danger"
+            className="btn btn-grey confirm-danger"
             onClick={() => {
               setCancelRequested(true);
               setConfirmingCancel(false);
@@ -459,7 +473,7 @@ function RunningScreen(props: {
           >
             {STR.running.cancelYes}
           </button>
-          <button className="pill pill-grey" onClick={() => setConfirmingCancel(false)}>
+          <button className="btn btn-grey" onClick={() => setConfirmingCancel(false)}>
             {STR.running.cancelNo}
           </button>
         </div>
@@ -501,10 +515,10 @@ function DoneScreen(props: { summary: ShrinkSummary; onRestart: () => void }): R
       )}
 
       <div className="button-row">
-        <button className="pill pill-yellow" onClick={() => void window.iqShrink.showItemInFolder(revealTarget)}>
+        <button className="btn btn-yellow" onClick={() => void window.iqShrink.showItemInFolder(revealTarget)}>
           {STR.done.showInFolder}
         </button>
-        <button className="pill pill-outline" onClick={props.onRestart}>
+        <button className="btn btn-outline" onClick={props.onRestart}>
           {STR.done.startAnother}
         </button>
       </div>
@@ -520,11 +534,14 @@ function ErrorScreen(props: {
   const mapped = STR.errors.map[props.code];
   return (
     <main className="card centered">
-      <h1 className="error-title">{STR.errors.title}</h1>
+      <h1 className="error-title status-row">
+        <span className="status-dot red" />
+        {STR.errors.title}
+      </h1>
       <p>{mapped.message}</p>
       <p className="muted">{mapped.action}</p>
       <p className="technical mono">{STR.errors.technicalDetail(props.raw)}</p>
-      <button className="pill pill-outline" onClick={props.onRestart}>
+      <button className="btn btn-outline" onClick={props.onRestart}>
         {STR.errors.back}
       </button>
     </main>
