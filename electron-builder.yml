@@ -31,6 +31,8 @@ mac:
   identity: null
   target:
     - target: dmg
+  # stable, versionless asset names for download links
+  artifactName: ImageIQ-Resizer-mac-${arch}.dmg
   # Per-arch dmgs instead of universal: sharp's per-arch @img packages and
   # ffmpeg-static's single-arch postinstall binary do not merge cleanly into
   # one universal asar (mergeASARs requires identical file sets). CI builds
@@ -42,6 +44,8 @@ win:
   target:
     - target: nsis
       arch: [x64]
+  # stable, versionless asset name for download links
+  artifactName: ImageIQ-Resizer-win-x64.exe
   # keep macOS binaries out of the Windows package (relevant when
   # cross-building from a Mac where both platforms' binaries coexist)
   files:

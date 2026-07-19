@@ -6,8 +6,8 @@ unsigned apps and the steps below get you past it. You only do this once.
 
 ## macOS (.dmg)
 
-1. Open the downloaded `ImageIQ Resizer-<version>-arm64.dmg` (Apple Silicon) or
-   `ImageIQ Resizer-<version>.dmg` (Intel) and drag **ImageIQ Resizer** into
+1. Open the downloaded `ImageIQ-Resizer-mac-arm64.dmg` (Apple Silicon) or
+   `ImageIQ-Resizer-mac-x64.dmg` (Intel) and drag **ImageIQ Resizer** into
    **Applications**.
 2. Open the app. macOS will block it with:
 
@@ -29,7 +29,7 @@ right-click (Control-click) **ImageIQ Resizer.app** → **Open** → **Open**.
 
 ## Windows (.exe installer)
 
-1. Run `ImageIQ Resizer Setup <version>.exe`. SmartScreen will show:
+1. Run `ImageIQ-Resizer-win-x64.exe`. SmartScreen will show:
 
    > **Windows protected your PC** — Microsoft Defender SmartScreen
    > prevented an unrecognized app from starting.

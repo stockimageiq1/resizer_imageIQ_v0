@@ -2,8 +2,10 @@
 # attach them to a DRAFT GitHub Release for manual review + publish.
 #
 # Required settings once this repo has a GitHub remote:
-#   - No secrets needed: electron-builder publishes with the workflow's
-#     automatic GITHUB_TOKEN (granted `contents: write` below).
+#   - No MANUAL secrets needed, but the automatic GITHUB_TOKEN must be
+#     passed explicitly as `env: GH_TOKEN` on every electron-builder step
+#     (electron-publish only reads GH_TOKEN — it does not discover the
+#     Actions token on its own), plus `permissions: contents: write`.
 #   - electron-builder.yml `publish.owner/repo` must match this repository.
 #   - Unsigned v1: no signing certs configured. When the Apple Developer
 #     cert lands: add CSC_LINK / CSC_KEY_PASSWORD secrets, set mac.identity
@@ -27,6 +29,9 @@ jobs:
   mac:
     runs-on: macos-latest # arm64 host
     strategy:
+      # one leg failing must not cancel the other — we want all three
+      # artifacts or all three errors, never a mix
+      fail-fast: false
       matrix:
         arch: [arm64, x64]
     steps:
@@ -52,6 +57,8 @@ jobs:
         run: npm test
       - run: npx electron-vite build
       - run: npx electron-builder --mac dmg --${{ matrix.arch }} --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   windows:
     runs-on: windows-latest
@@ -66,3 +73,5 @@ jobs:
       - run: npm test
       - run: npx electron-vite build
       - run: npx electron-builder --win nsis --x64 --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -7,7 +7,7 @@ encoder matrix. Work through this list and record results.
 
 ## Install
 
-- [ ] Run `ImageIQ Resizer Setup <version>.exe` → SmartScreen appears → More info
+- [ ] Run `ImageIQ-Resizer-win-x64.exe` → SmartScreen appears → More info
       → Run anyway (wording per docs/INSTALL.md).
 - [ ] Installer allows choosing the install directory; desktop shortcut is
       created; app launches from both shortcut and Start menu.
