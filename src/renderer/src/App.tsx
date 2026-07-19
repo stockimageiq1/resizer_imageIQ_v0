@@ -119,7 +119,7 @@ export function App(): React.JSX.Element {
     <div className="app">
       {/* FP-style top bar — visible in dark theme only (CSS-scoped) */}
       <header className="topbar">
-        <span className="brand-main">{STR.brandName}</span>
+        <img className="topbar-logo" src={logoWhite} alt={STR.brandName} />
         <span className="brand-sub">{STR.nav.subtitle}</span>
       </header>
 

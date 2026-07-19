@@ -89,18 +89,32 @@ void app.whenReady().then(async () => {
 
   if (smokeTest) {
     const win = mainWindow;
+    // --capture=<path>: save a PNG of the rendered window (self-capture,
+    // no OS screen-recording permission involved) for visual verification
+    const captureArg = process.argv.find((arg) => arg.startsWith('--capture='));
     win.webContents.once('did-finish-load', () => {
       setTimeout(() => {
-        void win.webContents
-          .executeJavaScript(`document.getElementById('root')?.children.length ?? -1`)
-          .then((childCount: unknown) => {
-            console.log(typeof childCount === 'number' && childCount > 0 ? 'SMOKE OK — UI rendered' : `SMOKE FAIL — empty #root (${String(childCount)})`);
-            app.quit();
-          })
-          .catch((err: unknown) => {
+        void (async () => {
+          try {
+            const childCount: unknown = await win.webContents.executeJavaScript(
+              `document.getElementById('root')?.children.length ?? -1`,
+            );
+            console.log(
+              typeof childCount === 'number' && childCount > 0
+                ? 'SMOKE OK — UI rendered'
+                : `SMOKE FAIL — empty #root (${String(childCount)})`,
+            );
+            if (captureArg !== undefined) {
+              const dest = captureArg.slice('--capture='.length);
+              const image = await win.webContents.capturePage();
+              await fs.writeFile(dest, image.toPNG());
+              console.log(`SMOKE CAPTURE ${dest}`);
+            }
+          } catch (err) {
             console.log(`SMOKE FAIL — ${String(err)}`);
-            app.quit();
-          });
+          }
+          app.quit();
+        })();
       }, 700);
     });
   }

@@ -39,28 +39,29 @@ body {
   min-height: 0;
 }
 
-/* FP TopBar: slim bar across the whole window; text lockup lives here in
-   dark. Light theme hides it (sidebar logo lockup carries the brand). */
+/* FP TopBar: slim bar across the whole window; the white logo + RESIZER
+   lockup lives here in dark. Light theme hides it (sidebar logo lockup
+   carries the brand). Left padding matches the sidebar text grid (1.2rem);
+   the logo asset has a tight viewBox, so its visual edge ≈ its box edge. */
 .topbar {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
+  align-items: center;
+  gap: 11px;
   height: 48px;
-  padding: 14px 14px 0;
+  padding: 0 14px 0 1.2rem;
   border-bottom: 1px solid var(--chrome-line);
   flex: none;
   white-space: nowrap;
 }
 
-.brand-main {
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  font-size: 13px;
-  color: var(--text);
-  text-transform: uppercase;
+.topbar-logo {
+  height: 21px;
+  width: auto;
+  display: block;
 }
 
 .brand-sub {
+  transform: translateY(2px); /* optical: sit on the logo's lowercase baseline */
   font-weight: 600;
   letter-spacing: 0.14em;
   font-size: 11px;
