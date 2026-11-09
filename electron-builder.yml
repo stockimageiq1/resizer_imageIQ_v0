@@ -63,6 +63,15 @@ mac:
     - zip
   # stable, versionless asset names for download links
   artifactName: ImageIQ-Resizer-mac-${arch}.${ext}
+  # The text macOS shows under "would like to access files in your Desktop
+  # folder" (and Documents, Downloads, a removable or network volume). Only
+  # the explanation: no new permission or entitlement comes with it.
+  extendInfo:
+    NSDesktopFolderUsageDescription: &folderAccess ImageIQ Resizer reads the photos and videos in the folder you choose and saves resized copies in a new folder next to it, or where you choose. Your originals are not changed.
+    NSDocumentsFolderUsageDescription: *folderAccess
+    NSDownloadsFolderUsageDescription: *folderAccess
+    NSRemovableVolumesUsageDescription: *folderAccess
+    NSNetworkVolumesUsageDescription: *folderAccess
   # Per-arch dmgs instead of universal: sharp's per-arch @img packages and
   # ffmpeg-static's single-arch postinstall binary do not merge cleanly into
   # one universal asar (mergeASARs requires identical file sets).
