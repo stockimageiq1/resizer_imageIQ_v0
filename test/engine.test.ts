@@ -124,16 +124,16 @@ test('iq-shrink engine end-to-end', async (t) => {
     assert.deepEqual(outFiles, expected);
   });
 
-  await t.test('images: resized, never upscaled, EXIF applied + stripped, JPEG bytes under original names', async () => {
+  await t.test('images: resized, never upscaled, EXIF applied + stripped, same format as the original', async () => {
     const big = await sharp(path.join(outDir, 'big-landscape.jpg')).metadata();
-    assert.equal(big.width, 1024);
-    assert.equal(big.height, 683);
+    assert.equal(big.width, 1280);
+    assert.equal(big.height, 853);
     assert.equal(big.format, 'jpeg');
     assert.equal(big.isProgressive, true);
 
-    // .png name, JPEG content (exact-name rule for downstream CSV matching)
+    // .png name, PNG content (the server refuses a name that does not match the bytes)
     const small = await sharp(path.join(outDir, 'Luka Ažman', '2026-05-18 CREATIVE - Lab Tech', 'small.png')).metadata();
-    assert.equal(small.format, 'jpeg');
+    assert.equal(small.format, 'png');
     assert.equal(small.width, 400);
     assert.equal(small.height, 300);
 

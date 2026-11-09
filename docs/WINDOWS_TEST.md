@@ -42,7 +42,7 @@ encoder matrix. Work through this list and record results.
 - [ ] Drop a real folder (nested subfolders, spaces/unicode names, JPG +
       PNG + HEIC + MOV/MP4): file names preserved EXACTLY, originals
       untouched, junk (.DS_Store/Thumbs.db) excluded.
-- [ ] Images ≤1024 px JPEG, metadata stripped; videos ≤720p H.264, no
+- [ ] Images ≤1280 px in the original's format, capture date kept, other metadata stripped; videos ≤720p H.264, no
       audio (unless the setting is on), original extensions kept.
 - [ ] ZIP root folder is the original folder name (no `_lowres`).
 - [ ] Cancel mid-run kills the encode and deletes the partial output.

@@ -69,7 +69,7 @@ test('engine option plumbing: dimension, quality, height, crf, audio', async (t)
   await t.test('defaults unchanged when options are omitted', async () => {
     const defaultsRun = await runShrink({ inputDir, outDir: path.join(scratch, 'defaults_out') });
     const big = await sharp(path.join(defaultsRun.outputPath, 'big-landscape.jpg')).metadata();
-    assert.equal(big.width, 1024);
+    assert.equal(big.width, 1280);
     const hd = await videoInfo(path.join(defaultsRun.outputPath, 'clip-hd.mov'));
     assert.equal(hd.width, 1280);
     assert.equal(hd.height, 720);

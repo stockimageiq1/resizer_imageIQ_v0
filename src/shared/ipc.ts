@@ -24,7 +24,7 @@ export interface Settings {
   outputParentDir: string | null;
   /** Longest image side in px (256–4096). */
   imageMaxDimension: number;
-  /** JPEG output quality (40–95). */
+  /** JPEG and WebP output quality (40–95). */
   jpegQuality: number;
   /** Max video height in px (240–2160); width scales to match. */
   videoMaxHeight: number;
@@ -48,8 +48,8 @@ export const SETTING_RANGES = {
 export const DEFAULT_SETTINGS: Settings = {
   createZip: true,
   outputParentDir: null,
-  imageMaxDimension: 1024,
-  jpegQuality: 80,
+  imageMaxDimension: 1280,
+  jpegQuality: 92,
   videoMaxHeight: 720,
   videoCrf: 27,
   keepAudio: false,

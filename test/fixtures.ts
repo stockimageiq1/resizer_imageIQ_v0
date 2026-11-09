@@ -8,7 +8,7 @@ import sharp from 'sharp';
  * Generates the fixture tree in a temp dir — no committed binaries.
  *
  * <inputDir>/
- *   big-landscape.jpg        3000x2000 → must resize to 1024x683
+ *   big-landscape.jpg        3000x2000 → must resize to 1280x853
  *   broken.jpg               deliberately corrupt → copy + report
  *   broken-clip.mov          deliberately corrupt → copy + report
  *   clip-hd.mov              1s 1920x1080 + audio → 1280x720, audio stripped
@@ -18,7 +18,7 @@ import sharp from 'sharp';
  *   Luka Ažman/
  *     clip-small.mp4         1s 320x240 → must NOT upscale
  *     2026-05-18 CREATIVE - Lab Tech/
- *       small.png            400x300 → must NOT upscale; JPEG bytes, .png name
+ *       small.png            400x300 → must NOT upscale; PNG bytes, .png name
  *       rotated.jpg          600x400 with EXIF orientation 6 → pixels rotated to 400x600
  *       Thumbs.db            junk → excluded
  */

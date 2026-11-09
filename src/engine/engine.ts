@@ -1,7 +1,7 @@
 import { promises as fs } from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import { heicSupported, processImage } from './imageProcessor';
+import { heicSupported, isHeifName, outputRelPath, processImage } from './imageProcessor';
 import { scanInput } from './scanner';
 import * as videoProcessor from './videoProcessor';
 import { detectVideoEncoding, ffmpegPath, VideoEncoder, VideoOptions } from './videoProcessor';
@@ -24,6 +24,8 @@ interface Task {
   action: 'image' | 'video' | 'copy';
   /** Reason when action is 'copy' (decided up front, e.g. HEIC unsupported). */
   reason?: string;
+  /** Where the copy goes when it is not the original's own relative path (HEIC/HEIF → .jpg). */
+  outRelPath?: string;
 }
 
 export async function runShrink(options: ShrinkOptions): Promise<ShrinkSummary> {
@@ -139,8 +141,9 @@ export async function runShrink(options: ShrinkOptions): Promise<ShrinkSummary> 
       await copyOriginal(file, task.reason ?? 'unprocessable');
       return;
     }
-    // Output keeps the EXACT original name (downstream CSV matching).
-    const dest = toOutPath(outDir, file.relPath);
+    // Output keeps the EXACT original name (downstream CSV matching); HEIC/HEIF
+    // are the one exception (the web app does not take them, so they become .jpg).
+    const dest = toOutPath(outDir, task.outRelPath ?? file.relPath);
     try {
       if (task.action === 'image') {
         await processImage(file.absPath, dest, {
@@ -202,11 +205,19 @@ export async function runShrink(options: ShrinkOptions): Promise<ShrinkSummary> 
 }
 
 function planTasks(files: ScannedFile[], heicOk: boolean, ffmpegOk: boolean): Task[] {
-  return files.map((file) => {
-    const ext = path.posix.extname(file.relPath).toLowerCase();
+  // Lower-cased: the default macOS volume does not tell "A.JPG" from "a.jpg".
+  const taken = new Set(files.filter((f) => !isHeifName(f.relPath)).map((f) => f.relPath.toLowerCase()));
+  return files.map((file): Task => {
     if (file.kind === 'image') {
-      if ((ext === '.heic' || ext === '.heif') && !heicOk) {
-        return { file, action: 'copy' as const, reason: 'HEIC/HEIF decoding not available in this sharp build' };
+      if (isHeifName(file.relPath)) {
+        if (!heicOk) return { file, action: 'copy', reason: 'HEIC/HEIF decoding not available in this sharp build' };
+        const outRelPath = outputRelPath(file.relPath);
+        const key = outRelPath.toLowerCase();
+        if (taken.has(key)) {
+          return { file, action: 'copy', reason: `${path.posix.basename(outRelPath)} already exists in this folder — the JPEG copy would overwrite it` };
+        }
+        taken.add(key);
+        return { file, action: 'image', outRelPath };
       }
       return { file, action: 'image' as const };
     }

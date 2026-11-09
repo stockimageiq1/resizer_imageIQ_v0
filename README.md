@@ -2,8 +2,9 @@
 
 STOCK IMAGEIQ local media-downscaler: a processing engine with two entry
 points — a CLI and an Electron desktop app. Produces a lowres proxy tree of an
-input folder (images ≤1024 px JPEG, videos ≤720p H.264, metadata stripped) for
-metadata processing with CSV export.
+input folder (images ≤1280 px in the format of the original, capture date kept
+and all other metadata stripped; videos ≤720p H.264) for metadata processing
+with CSV export.
 
 ## Packaging (Milestone 4)
 
@@ -35,8 +36,8 @@ metadata processing with CSV export.
   headline and Show in Folder. Cancel kills the active ffmpeg encode and
   deletes the partial output. Collisions offer Overwrite / Keep Both / Cancel
   (Keep Both writes `{name}_lowres_2`, `_3`, …).
-- Settings page: image max dimension (256–4096, default 1024), JPEG
-  quality (40–95, default 80), video max height (240–2160, default 720), CRF
+- Settings page: image max dimension (256–4096, default 1280), JPEG
+  and WebP quality (40–95, default 92), video max height (240–2160, default 720), CRF
   (18–35, default 27), keep audio (default off), hardware acceleration
   (default on), create-zip default, default output location. Persisted in
   userData; main clamps ranges; changes apply to the next run.
@@ -48,10 +49,14 @@ metadata processing with CSV export.
 
 **Key invariant:** every output file keeps its **exact original name including
 extension** — the downstream CSV is keyed by file name and must match the
-originals when uploading to stock photo/video sites. Non-JPEG images therefore
-contain JPEG bytes under their original name (`small.png` is a JPEG named
-`small.png`); videos are re-encoded into a container matching their original
-extension. Folder names (semantic context for the SaaS) are preserved exactly.
+originals when uploading to stock photo/video sites — and is encoded in the
+format that extension names, because the server refuses a file whose bytes do
+not match its extension (415, and the whole batch with it). `small.png` is a
+PNG, `a.tiff` a TIFF; videos are re-encoded into a container matching their
+original extension. Folder names (semantic context for the SaaS) are preserved
+exactly. The one exception: HEIC/HEIF copies are JPEGs named `.jpg`, because
+the web app does not take HEIC; if that name is already taken in the folder the
+HEIC is copied unprocessed and reported instead of overwriting.
 
 **Iron rule:** originals are never written to. The output tree is a sibling
 folder `{inputName}_lowres`; the engine refuses any output location that is,
@@ -107,9 +112,13 @@ settings live (libx264 + the hardware encoders).
 ## Processing rules
 
 - **Images** (`.jpg .jpeg .png .heic .heif .tiff .tif .webp`, sharp): EXIF
-  orientation applied to pixels, resized to max 1024 px on the longest side
-  (never upscaled), all metadata (EXIF/GPS/XMP) stripped, JPEG q80
-  progressive/mozjpeg. 4 parallel workers.
+  orientation applied to pixels, resized to max 1280 px on the longest side
+  (never upscaled), 8-bit sRGB. Same format as the original: JPEG q92
+  progressive/mozjpeg, PNG level 6, TIFF deflate, WebP q92; HEIC/HEIF → JPEG
+  `.jpg` (real iPhone HEVC files are decoded by macOS `sips`; elsewhere they
+  are copied unprocessed). The capture-date fields (`DateTimeOriginal`,
+  `DateTimeDigitized`, `OffsetTime*`) stay, in every format; everything else
+  (EXIF, GPS, XMP, IPTC) is stripped. 4 parallel workers.
 - **Videos** (`.mov .mp4 .m4v .avi .mkv .mts .m2ts`, bundled ffmpeg): scaled
   to fit 1280×720 (never upscaled, even dimensions enforced), H.264 at CRF 27
   equivalent, yuv420p, no audio; `+faststart` for mov/mp4-family containers.
@@ -138,5 +147,5 @@ settings live (libx264 + the hardware encoders).
 images incl. one EXIF-rotated, ffmpeg-generated clips incl. one with audio,
 unicode/space folder names, junk files, deliberately corrupt image and video),
 runs the engine, and asserts: originals untouched (checksums), exact-name
-mirror, resize/rotation/stripping, corrupt files copied + reported, zip root
+mirror, output format per input format, capture date read back, resize/rotation/stripping, corrupt files copied + reported, zip root
 name, collision/overwrite behavior, unsafe-output rejection.

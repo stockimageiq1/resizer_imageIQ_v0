@@ -6,7 +6,7 @@ import { ProgressEvent, ShrinkError, ShrinkSummary } from './engine/types';
 const USAGE = `Usage: iq-shrink <input-folder> [options]
 
 Creates a lowres proxy tree "{inputName}_lowres" next to the input folder.
-Originals are never modified. File names are preserved exactly.
+Originals are never modified. File names are preserved exactly (HEIC/HEIF copies become .jpg).
 
 Options:
   --zip           also create {inputName}_lowres.zip next to the output folder

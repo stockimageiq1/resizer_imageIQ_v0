@@ -62,9 +62,9 @@ export interface ShrinkOptions {
   overwrite?: boolean;
   /** Parallel image workers; videos always run one at a time. Default 4. */
   imageConcurrency?: number;
-  /** Longest image side in px; never upscales. Default 1024. */
+  /** Longest image side in px; never upscales. Default 1280. */
   imageMaxDimension?: number;
-  /** JPEG output quality. Default 80. */
+  /** JPEG and WebP output quality. Default 92. */
   jpegQuality?: number;
   /** Max video height in px; width scales to match (16:9 bound). Default 720. */
   videoMaxHeight?: number;

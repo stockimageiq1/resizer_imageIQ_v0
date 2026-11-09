@@ -131,7 +131,7 @@ export const STR = {
     imageMaxDimension: 'Max dimension (px)',
     imageMaxDimensionHint: 'Longest side, 256–4096. Images are never upscaled.',
     jpegQuality: 'JPEG quality',
-    jpegQualityHint: '40–95.',
+    jpegQualityHint: '40–95. Also used for WebP; PNG and TIFF are lossless.',
     videoMaxHeight: 'Max height (px)',
     videoMaxHeightHint: '240–2160 — width scales to match (16:9 bound).',
     videoCrf: 'CRF (quality)',
