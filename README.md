@@ -6,20 +6,71 @@ input folder (images ≤1280 px in the format of the original, capture date kept
 and all other metadata stripped; videos ≤720p H.264) for metadata processing
 with CSV export.
 
-## Packaging (Milestone 4)
+## Packaging
 
-- `npm run package:mac` → `release/ImageIQ-Resizer-mac-<arch>.dmg` (host
-  arch; per-arch dmgs instead of universal — see electron-builder.yml).
-- `npm run package:win` → `release/ImageIQ-Resizer-win-x64.exe` (nsis,
-  x64; cross-buildable from macOS, natively built + runtime-verified in CI).
-- CI: pushing a `v*` tag builds mac (arm64+x64) and windows installers and
-  attaches them to a draft GitHub Release (.github/workflows/release.yml).
-- v1 ships unsigned — user-facing Gatekeeper/SmartScreen steps in
-  docs/INSTALL.md; Windows runtime checklist in docs/WINDOWS_TEST.md.
-- ffmpeg is asarUnpack'd and path-rewritten (`ffmpegPath()`); a startup
-  assertion verifies every bundled binary and shows an error dialog if
-  missing. Auto-update: ON for Windows, OFF for macOS until signing lands
-  (`src/main/updater.ts`).
+**Mac only for now; Windows later** (we do not release a build without code
+signing). The app is signed with the Developer ID, notarised and stapled, so
+macOS shows only the "downloaded from the Internet" window (`docs/INSTALL.md`).
+
+```bash
+npm run dist:mac                  # Apple silicon: signed, notarised, stapled
+npm run package:mac:x64           # Intel, built in ../wt-resizer-x64
+npm run release:mac               # both builds → release/upload-<version>/, 7 files
+npm run dist:mac:unsigned         # quick local try, not for anyone else
+npm run package:mac:x64:unsigned  # the same, Intel
+npm run package:win               # build test only, not released
+```
+
+Per-arch dmgs instead of universal: see `electron-builder.yml`. ffmpeg is
+asarUnpack'd and path-rewritten (`ffmpegPath()`); a startup assertion verifies
+every bundled binary and shows an error dialog if missing. `--smoke-test`
+checks sharp, ffmpeg and electron-updater in the packaged app (exit code 1 on
+failure). CI (`.github/workflows/release.yml`) only runs typecheck and tests;
+Windows is packaged there as a test and nothing is kept.
+
+Signed builds need, on the Mac that builds them: the Developer ID Application
+certificate in the login keychain (with more than one, `CSC_NAME` says which)
+and the App Store Connect API key in the environment, from `.env.signing`
+(template: `.env.signing.example`, the same variables as the Mac app; never
+committed). `scripts/check-mac-signing.sh` checks all of it before a build.
+Entitlements (`build/entitlements.mac.plist`): `allow-jit` and
+`allow-unsigned-executable-memory`, which Electron's V8 needs under the
+hardened runtime. No `disable-library-validation`: sharp and ffmpeg are signed
+with the app, by the same team.
+
+## Releasing an update (macOS)
+
+The app updates itself from **GitHub Releases of
+`stockimageiq1/stockimageiq-resizer-releases`** (public, release files only, no
+code; `publish` in `electron-builder.yml`). It checks at start, offers
+"Download & Restart", and restarts once no resize is running. An update must be
+signed by the same Apple team and keep the app id `com.stockimageiq.resizer`.
+Nothing in this repository uploads anything: every build command passes
+`--publish never`.
+
+A release, on the owner's Mac, in one Terminal window:
+
+```bash
+cd ~/Desktop/IMAGEIQ_CLEAN/resizer_imageIQ_v0
+git switch main && git pull --ff-only && npm ci      # the commit to release
+set -a; source .env.signing; set +a
+bash scripts/check-mac-signing.sh                    # → check-mac-signing: OK
+npm run dist:mac                                     # Apple silicon
+bash scripts/verify-mac-sign.sh                      # → PASS
+npm run package:mac:x64                              # Intel
+bash scripts/verify-mac-sign.sh                      # → PASS for both
+npm run release:mac                                  # → release/upload-<version>/, 7 files
+```
+
+`npm run release:mac` refuses unless both apps are the version in
+`package.json`, both pass `verify-mac-sign.sh`, and each zip is the file its
+`latest-mac.yml` describes. Then on github.com: the releases repository →
+Releases → Draft a new release → tag `v<version>`, title `ImageIQ Resizer
+<version>` → drag in all seven files → Save draft → check the list → Publish
+release. A draft is invisible to the app; once published, installed apps see it
+at their next start, and `…/releases/latest/download/ImageIQ-Resizer-mac-arm64.dmg`
+(or `-x64.dmg`) gives the new files. File names never carry the version, so the
+links stay.
 
 ## Desktop app
 

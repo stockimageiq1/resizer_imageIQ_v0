@@ -1,35 +1,24 @@
-# Release pipeline: push a tag `v*` (e.g. v0.3.2) to build installers and
-# attach them to ONE draft GitHub Release for manual review + publish.
+# Checks only: typecheck and tests, on every branch push and on tags `v*`.
 #
-# WHY builds don't publish: GitHub DRAFT releases do not own their tag name
-# (no ref exists until published), so parallel electron-builder publishers
-# each do list-then-create and race into DUPLICATE drafts (v0.3.1 produced
-# two, neither complete). Build jobs therefore run with --publish never and
-# upload workflow artifacts; a single final job assembles everything,
-# merges the per-arch latest-mac.yml files (electron-builder would have
-# merged them server-side when publishing itself), verifies exactly 8
-# assets, deletes any stale drafts for the tag (re-run safety), and creates
-# the one draft. Only that job needs GH_TOKEN.
+# No release is built here. A release is built, signed and notarised on the
+# owner's Mac, as for the Mac app, so the Developer ID certificate and the
+# notarisation key never enter GitHub (README, "Releasing an update").
 #
-# Unsigned v1: when the Apple cert lands, add CSC_LINK / CSC_KEY_PASSWORD,
-# set mac.identity + notarization, flip the macOS updater flag
-# (src/main/updater.ts).
-name: release
+# Windows runs as a test only: it must keep building, but nothing is released
+# for it and no installer is kept until it can be code-signed.
+name: ci
 
 on:
   push:
+    branches: ["**"]
     tags: ["v*"]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   mac:
     runs-on: macos-latest # arm64 host
-    strategy:
-      fail-fast: false # we want all artifacts or all errors, never a mix
-      matrix:
-        arch: [arm64, x64]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -37,29 +26,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Swap bundled binaries to x64 (cross-arch leg)
-        if: matrix.arch == 'x64'
-        # ffmpeg-static's install.js honors npm_config_arch when run
-        # directly (npm strips unknown npm_config_* env, so `npm rebuild`
-        # cannot do this). Delete first — install.js skips existing binaries.
-        run: |
-          rm node_modules/ffmpeg-static/ffmpeg
-          npm_config_arch=x64 node node_modules/ffmpeg-static/install.js
-          npm install --no-save --force @img/sharp-darwin-x64 @img/sharp-libvips-darwin-x64
       - run: npm run typecheck
-      - name: Engine tests (host arch only — they spawn the bundled ffmpeg)
-        if: matrix.arch == 'arm64'
-        run: npm test
-      - run: npx electron-vite build
-      - run: npx electron-builder --mac dmg --${{ matrix.arch }} --publish never
-      - uses: actions/upload-artifact@v4
-        with:
-          name: mac-${{ matrix.arch }}
-          if-no-files-found: error
-          path: |
-            release/*.dmg
-            release/*.dmg.blockmap
-            release/latest-mac.yml
+      - run: npm test
 
   windows:
     runs-on: windows-latest
@@ -73,66 +41,5 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npx electron-vite build
-      - run: npx electron-builder --win nsis --x64 --publish never
-      - uses: actions/upload-artifact@v4
-        with:
-          name: win-x64
-          if-no-files-found: error
-          path: |
-            release/*.exe
-            release/*.exe.blockmap
-            release/latest.yml
-
-  release:
-    needs: [mac, windows]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          path: incoming
-      - name: Assemble assets (merge per-arch latest-mac.yml)
-        run: |
-          mkdir -p assets
-          find incoming -type f \( -name '*.dmg' -o -name '*.blockmap' -o -name '*.exe' \) -exec cp {} assets/ \;
-          cp incoming/win-x64/latest.yml assets/
-          python3 - <<'PY'
-          import yaml
-          a = yaml.safe_load(open('incoming/mac-arm64/latest-mac.yml'))
-          b = yaml.safe_load(open('incoming/mac-x64/latest-mac.yml'))
-          # electron-builder merges per-arch entries when it publishes itself;
-          # replicate: union the files lists, keep shared version/date fields
-          assert a['version'] == b['version'], f"version mismatch: {a['version']} vs {b['version']}"
-          seen = {f['url'] for f in a['files']}
-          a['files'] += [f for f in b['files'] if f['url'] not in seen]
-          yaml.safe_dump(a, open('assets/latest-mac.yml', 'w'), sort_keys=False)
-          PY
-          ls -la assets
-      - name: Verify asset completeness (exactly 8)
-        run: |
-          EXPECTED="ImageIQ-Resizer-mac-arm64.dmg ImageIQ-Resizer-mac-arm64.dmg.blockmap ImageIQ-Resizer-mac-x64.dmg ImageIQ-Resizer-mac-x64.dmg.blockmap ImageIQ-Resizer-win-x64.exe ImageIQ-Resizer-win-x64.exe.blockmap latest.yml latest-mac.yml"
-          missing=0
-          for f in $EXPECTED; do
-            [ -f "assets/$f" ] || { echo "::error::MISSING asset: $f"; missing=1; }
-          done
-          count=$(ls assets | wc -l)
-          [ "$count" -eq 8 ] || { echo "::error::expected exactly 8 assets, found $count"; missing=1; }
-          [ "$missing" -eq 0 ] || exit 1
-      - name: Delete stale drafts for this tag (re-run safety)
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh api "/repos/${{ github.repository }}/releases" --paginate \
-            --jq ".[] | select(.draft and .tag_name == \"${{ github.ref_name }}\") | .id" |
-          while read -r id; do
-            echo "deleting stale draft release $id"
-            gh api -X DELETE "/repos/${{ github.repository }}/releases/$id"
-          done
-      - name: Create the single draft release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release create "${{ github.ref_name }}" assets/* \
-            --draft \
-            --verify-tag \
-            --title "${{ github.ref_name }}" \
-            --repo "${{ github.repository }}"
+      - name: Package as a test (the installer is not kept)
+        run: npx electron-builder --win nsis --x64 --publish never
