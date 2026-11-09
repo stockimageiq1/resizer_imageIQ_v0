@@ -4,7 +4,9 @@ import * as path from 'node:path';
 import { test } from 'node:test';
 
 const ROOT = path.resolve(__dirname, '..', '..');
-const builderYml = (): Promise<string> => fs.readFile(path.join(ROOT, 'electron-builder.yml'), 'utf8');
+// Windows CI checks files out with CRLF line endings
+const builderYml = async (): Promise<string> =>
+  (await fs.readFile(path.join(ROOT, 'electron-builder.yml'), 'utf8')).replace(/\r\n/g, '\n');
 
 test('packaging: the fuses that keep outside code out of the signed app stay off', async () => {
   const yml = await builderYml();

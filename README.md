@@ -12,14 +12,12 @@ with CSV export.
 signing). The app is signed with the Developer ID, notarised and stapled, so
 macOS shows only the "downloaded from the Internet" window (`docs/INSTALL.md`).
 
-```bash
-npm run dist:mac                  # Apple silicon: signed, notarised, stapled
-npm run package:mac:x64           # Intel, built in ../wt-resizer-x64
-npm run release:mac               # both builds → release/upload-<version>/, 7 files
-npm run dist:mac:unsigned         # quick local try, not for anyone else
-npm run package:mac:x64:unsigned  # the same, Intel
-npm run package:win               # build test only, not released
-```
+- `npm run dist:mac`: Apple silicon, signed, notarised, stapled.
+- `npm run package:mac:x64`: Intel, built in `../wt-resizer-x64`.
+- `npm run release:mac`: both builds → `release/upload-<version>/`, 7 files.
+- `npm run dist:mac:unsigned`, `npm run package:mac:x64:unsigned`: quick local
+  tries, not for anyone else.
+- `npm run package:win`: build test only, not released.
 
 Per-arch dmgs instead of universal: see `electron-builder.yml`. ffmpeg is
 asarUnpack'd and path-rewritten (`ffmpegPath()`); a startup assertion verifies
@@ -53,16 +51,22 @@ A release, on the owner's Mac, in one Terminal window:
 
 ```bash
 cd ~/Desktop/IMAGEIQ_CLEAN/resizer_imageIQ_v0
-git switch main && git pull --ff-only && npm ci      # the commit to release
+git switch main && git pull --ff-only && npm ci
 set -a; source .env.signing; set +a
-bash scripts/check-mac-signing.sh                    # → check-mac-signing: OK
-npm run dist:mac                                     # Apple silicon
-bash scripts/verify-mac-sign.sh                      # → PASS
-"release/mac-arm64/ImageIQ Resizer.app/Contents/MacOS/ImageIQ Resizer" --smoke-test  # → SMOKE OK
-npm run package:mac:x64                              # Intel
-bash scripts/verify-mac-sign.sh                      # → PASS for both
-npm run release:mac                                  # → release/upload-<version>/, 7 files
+bash scripts/check-mac-signing.sh
+npm run dist:mac
+bash scripts/verify-mac-sign.sh
+"release/mac-arm64/ImageIQ Resizer.app/Contents/MacOS/ImageIQ Resizer" --smoke-test
+npm run package:mac:x64
+bash scripts/verify-mac-sign.sh
+npm run release:mac
 ```
+
+Each step must end as expected before the next: `check-mac-signing: OK`, then
+`PASS` from the verify script (the second time for both builds), `SMOKE OK`
+from the smoke test, and seven files in `release/upload-<version>/`. The block
+has no trailing comments on purpose: at a default zsh prompt `#` is not a
+comment, and the words after it would be passed to the script.
 
 `npm run release:mac` refuses unless both apps are the version in
 `package.json`, both pass `verify-mac-sign.sh`, and each zip is the file its
