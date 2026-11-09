@@ -15,7 +15,8 @@ ID and notarized by Apple. Windows comes later.
    > want to open it? Apple checked it for malicious software and none was
    > detected.
 
-   Click **Open**. That is the only window you should see. If macOS says it
+   Click **Open**. That is the only security warning you should see (macOS
+   may also ask once for access to a folder; that is normal). If macOS says it
    cannot verify the app, do not bypass the warning: download it again from
    the link we sent you and tell us.
 

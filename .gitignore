@@ -14,6 +14,7 @@ Thumbs.db
 
 # Apple signing: the values stay on the owner's Mac; only the template with
 # placeholders is committed.
-.env.signing
+.env*
 *.p8
 *.p12
+!.env.signing.example

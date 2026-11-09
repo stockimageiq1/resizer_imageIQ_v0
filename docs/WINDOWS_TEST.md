@@ -49,6 +49,9 @@ encoder matrix. Work through this list and record results.
 
 ## Auto-update (enabled on Windows)
 
+No Windows build is released for now and the update feed has no Windows files,
+so this section applies only once one is.
+
 - [ ] With no newer release published: app launches with no update prompt
       and no error (quiet fail).
 - [ ] With a newer draft release published: "Update available" dialog →

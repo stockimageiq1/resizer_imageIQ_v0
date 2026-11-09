@@ -36,7 +36,8 @@ committed). `scripts/check-mac-signing.sh` checks all of it before a build.
 Entitlements (`build/entitlements.mac.plist`): `allow-jit` and
 `allow-unsigned-executable-memory`, which Electron's V8 needs under the
 hardened runtime. No `disable-library-validation`: sharp and ffmpeg are signed
-with the app, by the same team.
+with the app, by the same team. Electron fuses as in the Mac app
+(`electron-builder.yml`): nothing outside the app can run code inside it.
 
 ## Releasing an update (macOS)
 
@@ -57,6 +58,7 @@ set -a; source .env.signing; set +a
 bash scripts/check-mac-signing.sh                    # → check-mac-signing: OK
 npm run dist:mac                                     # Apple silicon
 bash scripts/verify-mac-sign.sh                      # → PASS
+"release/mac-arm64/ImageIQ Resizer.app/Contents/MacOS/ImageIQ Resizer" --smoke-test  # → SMOKE OK
 npm run package:mac:x64                              # Intel
 bash scripts/verify-mac-sign.sh                      # → PASS for both
 npm run release:mac                                  # → release/upload-<version>/, 7 files
