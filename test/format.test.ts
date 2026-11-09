@@ -486,6 +486,10 @@ test('adding the dates to a TIFF never damages it when the write fails', async (
 });
 
 test('a very long file name keeps its date and is processed', async (t) => {
+  if (process.platform === 'win32') {
+    t.skip('Windows limits the whole path to 260 characters');
+    return;
+  }
   const scratch = await fs.mkdtemp(path.join(os.tmpdir(), 'iq-long-'));
   t.after(async () => {
     await fs.rm(scratch, { recursive: true, force: true });
