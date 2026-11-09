@@ -1,4 +1,5 @@
 import { execFile } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import { promises as fs } from 'node:fs';
 import * as path from 'node:path';
 import { promisify } from 'node:util';
@@ -12,6 +13,11 @@ import {
 } from './exifDates';
 
 const execFileAsync = promisify(execFile);
+const SIPS_TIMEOUT_MS = 120_000;
+
+// Originals change between runs (an edited folder, "Overwrite"): libvips' file
+// cache would serve the previous picture for a path it has already seen.
+sharp.cache(false);
 
 /** The long side the server, the browser upload and the Mac app all work at. */
 export const MAX_IMAGE_DIMENSION = 1280;
@@ -60,7 +66,16 @@ export function heicSupported(): boolean {
 
 /** macOS decodes HEVC itself; a lossless temporary TIFF carries the pixels (and orientation tag) to sharp. */
 async function hevcToTiff(src: string, temporary: string): Promise<void> {
-  await execFileAsync('/usr/bin/sips', ['-s', 'format', 'tiff', src, '--out', temporary]);
+  await execFileAsync('/usr/bin/sips', ['-s', 'format', 'tiff', src, '--out', temporary], { timeout: SIPS_TIMEOUT_MS });
+}
+
+/** sips exits 0 on a damaged HEIC and writes a black picture; a copy like that must not count as processed. */
+function allBlack(pixels: Buffer, channels: number): boolean {
+  const colour = Math.min(channels, 3);
+  for (let i = 0; i < pixels.length; i += 1) {
+    if (i % channels < colour && pixels[i] !== 0) return false;
+  }
+  return true;
 }
 
 async function datesOf(src: string, meta: sharp.Metadata): Promise<CaptureDates> {
@@ -83,17 +98,31 @@ export async function processImage(src: string, dest: string, options?: ImageOpt
   const format = FORMAT_BY_EXTENSION[path.extname(dest).toLowerCase()];
   if (format === undefined) throw new Error(`no output format for ${path.basename(dest)}`);
 
-  const meta = await sharp(src).metadata();
+  // libheif's default limits refuse a real iPhone photo (a grid of 48 tiles).
+  const open: sharp.SharpOptions = isHeifName(src) ? { unlimited: true } : {};
+  const meta = await sharp(src, open).metadata();
   const dates = await datesOf(src, meta);
   const viaSystem = meta.format === 'heif' && meta.compression === 'hevc' && process.platform === 'darwin';
-  const temporary = `${dest}.sips.tiff`;
+  const temporary = `${dest}.${randomUUID()}.sips.tiff`;
 
   try {
     if (viaSystem) await hevcToTiff(src, temporary);
-    let pipeline = sharp(viaSystem ? temporary : src)
+    const decoded = viaSystem ? await sharp(temporary).metadata() : meta;
+    const resized = sharp(viaSystem ? temporary : src, viaSystem ? {} : open)
       .rotate()
-      .resize({ width: maxDimension, height: maxDimension, fit: 'inside', withoutEnlargement: true })
-      .toColourspace('srgb'); // 8-bit sRGB out, whatever profile / bit depth came in
+      .resize({ width: maxDimension, height: maxDimension, fit: 'inside', withoutEnlargement: true });
+    const flattened = format === 'jpeg' ? resized.flatten({ background: '#ffffff' }) : resized;
+    // Rendered to bare 8-bit sRGB pixels first, so nothing else the source carries
+    // reaches the encoder: withExif alone lets the EXIF thumbnail through. A source
+    // with a profile needs it applied for 16-bit input to keep its colours; on one
+    // without a profile the same call shifts them.
+    const { data, info } = await (decoded.icc === undefined ? flattened : flattened.withIccProfile('srgb'))
+      .toColourspace('srgb')
+      .raw({ depth: 'uchar' })
+      .toBuffer({ resolveWithObject: true });
+    if (viaSystem && allBlack(data, info.channels)) throw new Error('macOS could not decode this HEIC');
+
+    let pipeline = sharp(data, { raw: { width: info.width, height: info.height, channels: info.channels } });
     // TIFF: libvips writes no EXIF into it, the dates are added after the encode.
     if (hasDates(dates) && format !== 'tiff') pipeline = pipeline.withExif({ IFD2: { ...dates } });
     await encode(pipeline, format, quality).toFile(dest);

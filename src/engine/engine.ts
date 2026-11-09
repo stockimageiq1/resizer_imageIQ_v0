@@ -81,7 +81,7 @@ export async function runShrink(options: ShrinkOptions): Promise<ShrinkSummary> 
     await fs.mkdir(toOutPath(outDir, dirRel), { recursive: true });
   }
 
-  const tasks = planTasks(scan.files, heicSupported(), ffmpegPath() !== null);
+  const tasks = planTasks(scan.files, scan.dirs, heicSupported(), ffmpegPath() !== null);
 
   // Encoder selection happens once per run: probed hardware encoder (cached
   // per process) unless hardware acceleration is off. Probes only run when
@@ -101,9 +101,15 @@ export async function runShrink(options: ShrinkOptions): Promise<ShrinkSummary> 
   let videosProcessed = 0;
 
   async function copyOriginal(file: ScannedFile, reason: string): Promise<void> {
-    await fs.copyFile(file.absPath, toOutPath(outDir, file.relPath));
-    copiedUnprocessed.push({ relPath: file.relPath, reason });
-    onProgress({ type: 'file-done', relPath: file.relPath, outcome: 'copied-unprocessed', reason });
+    let reported = reason;
+    try {
+      await fs.copyFile(file.absPath, toOutPath(outDir, file.relPath));
+    } catch (err) {
+      // an unreadable file must not take the whole run down
+      reported = `could not be read — nothing copied: ${errorMessage(err)}`;
+    }
+    copiedUnprocessed.push({ relPath: file.relPath, reason: reported });
+    onProgress({ type: 'file-done', relPath: file.relPath, outcome: 'copied-unprocessed', reason: reported });
   }
 
   async function encodeVideoWithFallback(
@@ -165,7 +171,7 @@ export async function runShrink(options: ShrinkOptions): Promise<ShrinkSummary> 
         onProgress({ type: 'file-done', relPath: file.relPath, outcome: 'processed', encoderUsed });
       }
     } catch (err) {
-      await fs.rm(dest, { force: true }); // drop any partial output before copying
+      await fs.rm(dest, { force: true }).catch(() => undefined); // drop any partial output before copying
       // a kill caused by cancellation is not a per-file failure — don't copy
       if (signal?.aborted === true) return;
       await copyOriginal(file, `${task.action} processing failed: ${errorMessage(err)}`);
@@ -204,15 +210,16 @@ export async function runShrink(options: ShrinkOptions): Promise<ShrinkSummary> 
   return summary;
 }
 
-function planTasks(files: ScannedFile[], heicOk: boolean, ffmpegOk: boolean): Task[] {
-  // Lower-cased: the default macOS volume does not tell "A.JPG" from "a.jpg".
-  const taken = new Set(files.filter((f) => !isHeifName(f.relPath)).map((f) => f.relPath.toLowerCase()));
+function planTasks(files: ScannedFile[], dirs: string[], heicOk: boolean, ffmpegOk: boolean): Task[] {
+  // The default macOS volume tells neither "A.JPG" from "a.jpg" nor the two Unicode forms of "Č" apart.
+  const nameKey = (relPath: string): string => relPath.normalize('NFC').toLowerCase();
+  const taken = new Set([...files.filter((f) => !isHeifName(f.relPath)).map((f) => f.relPath), ...dirs].map(nameKey));
   return files.map((file): Task => {
     if (file.kind === 'image') {
       if (isHeifName(file.relPath)) {
         if (!heicOk) return { file, action: 'copy', reason: 'HEIC/HEIF decoding not available in this sharp build' };
         const outRelPath = outputRelPath(file.relPath);
-        const key = outRelPath.toLowerCase();
+        const key = nameKey(outRelPath);
         if (taken.has(key)) {
           return { file, action: 'copy', reason: `${path.posix.basename(outRelPath)} already exists in this folder — the JPEG copy would overwrite it` };
         }
