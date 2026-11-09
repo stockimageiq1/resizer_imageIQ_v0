@@ -103,7 +103,8 @@ export async function processImage(src: string, dest: string, options?: ImageOpt
   const meta = await sharp(src, open).metadata();
   const dates = await datesOf(src, meta);
   const viaSystem = meta.format === 'heif' && meta.compression === 'hevc' && process.platform === 'darwin';
-  const temporary = `${dest}.${randomUUID()}.sips.tiff`;
+  // Short and in the same folder: a name built on the file's own would overflow on a long one.
+  const temporary = path.join(path.dirname(dest), `.iq-${randomUUID()}.tiff`);
 
   try {
     if (viaSystem) await hevcToTiff(src, temporary);

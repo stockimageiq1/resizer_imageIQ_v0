@@ -484,3 +484,23 @@ test('adding the dates to a TIFF never damages it when the write fails', async (
   await assert.rejects(appendExifDatesToTiff(file, DATES));
   assert.ok(before.equals(await fs.readFile(file)));
 });
+
+test('a very long file name keeps its date and is processed', async (t) => {
+  const scratch = await fs.mkdtemp(path.join(os.tmpdir(), 'iq-long-'));
+  t.after(async () => {
+    await fs.rm(scratch, { recursive: true, force: true });
+  });
+  const inputDir = path.join(scratch, 'Long');
+  await fs.mkdir(inputDir, { recursive: true });
+  const stem = 'x'.repeat(240);
+  await sharp(await pngBuffer(900, 600)).tiff({ compression: 'none' }).toFile(path.join(inputDir, `${stem}.tiff`));
+  await appendExifDatesToTiff(path.join(inputDir, `${stem}.tiff`), DATES);
+  if (process.platform === 'darwin') {
+    const png = path.join(scratch, 'source.png');
+    await sharp(await pngBuffer(900, 600)).png().toFile(png);
+    execFileSync('/usr/bin/sips', ['-s', 'format', 'heic', png, '--out', path.join(inputDir, `y${stem}.heic`)], { stdio: 'ignore' });
+  }
+  const summary = await runShrink({ inputDir, outDir: path.join(scratch, 'out') });
+  assert.deepEqual(await datesOf(path.join(summary.outputPath, `${stem}.tiff`)), DATES);
+  assert.deepEqual(summary.copiedUnprocessed, []);
+});

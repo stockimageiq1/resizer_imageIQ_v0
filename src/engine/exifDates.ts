@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { promises as fs } from 'node:fs';
+import * as path from 'node:path';
 
 /**
  * The capture time of a photo — the only EXIF a copy carries.
@@ -199,7 +200,7 @@ export async function appendExifDatesToTiff(file: string, dates: CaptureDates): 
 
   put32(tiff, 4, valueAt);
   // Through a temporary file: a failed write (full disk) must leave the copy as it was.
-  const temporary = `${file}.${randomUUID()}.tmp`;
+  const temporary = path.join(path.dirname(file), `.iq-${randomUUID()}.tmp`);
   try {
     await fs.writeFile(temporary, Buffer.concat([tiff, Buffer.alloc(padding), exifIfd, ...values, newIfd0]));
     await fs.rename(temporary, file);
