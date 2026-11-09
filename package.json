@@ -17,7 +17,7 @@
     "test": "npm run build && node --test \"dist/test/**/*.test.js\"",
     "clean": "rm -rf dist out",
     "dist:mac": "bash scripts/check-mac-signing.sh && electron-vite build && electron-builder --mac --arm64 --publish never && bash scripts/notarize-mac-dmg.sh \"release/mac-arm64/ImageIQ Resizer.app\" release/ImageIQ-Resizer-mac-arm64.dmg",
-    "dist:mac:unsigned": "electron-vite build && electron-builder --mac --arm64 --publish never -c.mac.identity=null -c.mac.forceCodeSigning=false -c.mac.notarize=false",
+    "dist:mac:unsigned": "electron-vite build && electron-builder --mac --arm64 --publish never -c.mac.identity=null -c.mac.forceCodeSigning=false -c.mac.notarize=false -c.electronFuses.resetAdHocDarwinSignature=true",
     "package:mac:x64": "bash scripts/package-mac-x64.sh",
     "package:mac:x64:unsigned": "bash scripts/package-mac-x64.sh --unsigned",
     "release:mac": "npm run build --silent && node dist/src/feed/releaseMac.js",

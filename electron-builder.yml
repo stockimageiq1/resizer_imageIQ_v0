@@ -23,6 +23,20 @@ asarUnpack:
   - "**/node_modules/sharp/**"
   - "**/node_modules/@img/**"
 
+# Electron fuses (as the Mac app), flipped in the packaged binary by
+# electron-builder's own @electron/fuses: ELECTRON_RUN_AS_NODE, NODE_OPTIONS /
+# NODE_EXTRA_CA_CERTS and --inspect* / SIGUSR1 are ignored, so nothing outside
+# the app can run code inside it. The app needs none of them: ffmpeg is a
+# separate binary and nothing uses process.fork.
+electronFuses:
+  runAsNode: false
+  enableNodeOptionsEnvironmentVariable: false
+  enableNodeCliInspectArguments: false
+  # Flipping a fuse changes the binary; electron-builder signs right after the
+  # flip. Unsigned builds have no signing step, and on Apple silicon an unsigned
+  # binary is killed at launch (exit 137), so they add
+  # -c.electronFuses.resetAdHocDarwinSignature=true (an ad hoc signature).
+
 # Signing: electron-builder finds the Developer ID Application identity in the
 # keychain by itself (or the one CSC_NAME names). No name or hash of an identity
 # is written in this repository. forceCodeSigning: a build without a usable

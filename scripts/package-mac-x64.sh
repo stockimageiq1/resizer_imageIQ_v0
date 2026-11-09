@@ -34,7 +34,7 @@ case "${1:-}" in
   --unsigned) SIGNED=0 ;;
   *) fail "usage: package-mac-x64.sh [--unsigned]" ;;
 esac
-UNSIGNED_FLAGS=(-c.mac.identity=null -c.mac.forceCodeSigning=false -c.mac.notarize=false)
+UNSIGNED_FLAGS=(-c.mac.identity=null -c.mac.forceCodeSigning=false -c.mac.notarize=false -c.electronFuses.resetAdHocDarwinSignature=true)
 
 [[ "$(uname -s)" == "Darwin" ]] || fail "macOS only"
 arch -x86_64 /usr/bin/true 2>/dev/null || fail "Rosetta is not installed — run: softwareupdate --install-rosetta --agree-to-license"
