@@ -2,6 +2,7 @@ import { app, dialog } from 'electron';
 import { STR } from '../shared/strings';
 import { anyRunActive } from './runManager';
 import { restartWhenIdle } from './updateRestart';
+import { loadAutoUpdater } from './updaterModule';
 
 /**
  * AUTO-UPDATE FEATURE FLAG (per platform).
@@ -27,7 +28,7 @@ export function initAutoUpdater(): void {
   if (AUTO_UPDATE_ENABLED[process.platform] !== true) return;
   void (async () => {
     try {
-      const { autoUpdater } = await import('electron-updater');
+      const autoUpdater = await loadAutoUpdater();
       autoUpdater.autoDownload = false;
       autoUpdater.on('error', () => undefined); // quiet fail
       autoUpdater.on('update-available', (info) => {

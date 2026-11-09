@@ -10,6 +10,7 @@ import { registerIpc } from './ipc';
 import { anyRunActive, cancelRun } from './runManager';
 import { getSettings } from './settings';
 import { initAutoUpdater } from './updater';
+import { loadAutoUpdater } from './updaterModule';
 
 const smokeTest = process.argv.includes('--smoke-test');
 const e2eFlagIndex = process.argv.indexOf('--e2e');
@@ -97,9 +98,9 @@ async function assertRuntime(): Promise<boolean> {
     console.log(`BINARY-ASSERT FAIL ffmpeg: ${String(err)}`);
   }
   try {
-    // loaded, not started: the update feed is checked only in a normal run
-    const updater = (await import('electron-updater')).default;
-    if (!('autoUpdater' in updater)) throw new Error('no autoUpdater export');
+    // the same path as a normal run, but not started: the feed is not checked here
+    const updater = await loadAutoUpdater();
+    if (typeof updater?.checkForUpdates !== 'function') throw new Error('autoUpdater is not available');
     console.log('MODULE-ASSERT OK electron-updater');
   } catch (err) {
     ok = false;
