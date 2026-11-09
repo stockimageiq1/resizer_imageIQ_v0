@@ -13,5 +13,5 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["src/main/**/*", "src/preload/**/*", "src/shared/**/*", "src/engine/**/*", "electron.vite.config.mts"]
+  "include": ["src/main/**/*", "src/preload/**/*", "src/shared/**/*", "src/engine/**/*", "src/feed/**/*", "electron.vite.config.mts"]
 }

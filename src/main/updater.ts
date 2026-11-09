@@ -1,18 +1,20 @@
 import { app, dialog } from 'electron';
 import { STR } from '../shared/strings';
+import { anyRunActive } from './runManager';
+import { restartWhenIdle } from './updateRestart';
 
 /**
  * AUTO-UPDATE FEATURE FLAG (per platform).
  *
- * macOS: electron-updater REQUIRES a signed (and notarized) app — unsigned
- * updates fail at install. Ships OFF. THE ONE-STEP CHANGE once the Apple
- * Developer certificate lands: flip `darwin` to true (and set the signing
- * identity in electron-builder.yml).
+ * macOS: ON since 0.4.0, the first signed and notarized version
+ * (electron-updater cannot install an unsigned update). Feed: the public
+ * stockimageiq-resizer-releases repository (electron-builder.yml, publish).
  *
- * Windows: unsigned auto-update works (SmartScreen aside) — ON.
+ * Windows: unsigned auto-update works (SmartScreen aside) — ON, but no Windows
+ * build is released for now.
  */
 const AUTO_UPDATE_ENABLED: Partial<Record<NodeJS.Platform, boolean>> = {
-  darwin: false,
+  darwin: true,
   win32: true,
 };
 
@@ -48,7 +50,8 @@ export function initAutoUpdater(): void {
         })();
       });
       autoUpdater.on('update-downloaded', () => {
-        autoUpdater.quitAndInstall();
+        // A resize started while the update was downloading finishes first.
+        restartWhenIdle(anyRunActive, () => autoUpdater.quitAndInstall());
       });
       await autoUpdater.checkForUpdates();
     } catch {

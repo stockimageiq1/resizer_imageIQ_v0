@@ -1,6 +1,9 @@
+import { execFile } from 'node:child_process';
 import { constants as fsConstants, promises as fs } from 'node:fs';
 import * as path from 'node:path';
+import { promisify } from 'node:util';
 import { app, BrowserWindow, dialog, Menu, nativeTheme } from 'electron';
+import sharp from 'sharp';
 import { ffmpegPath } from '../engine/videoProcessor';
 import { STR } from '../shared/strings';
 import { registerIpc } from './ipc';
@@ -69,6 +72,42 @@ async function assertBundledBinaries(): Promise<void> {
   }
 }
 
+/**
+ * --smoke-test only: what a packaged build (above all the Intel one, and after
+ * signing) must be able to do. Machine-readable lines for the packaging
+ * scripts; true when all of it works.
+ */
+async function assertRuntime(): Promise<boolean> {
+  let ok = true;
+  try {
+    await sharp({ create: { width: 16, height: 16, channels: 3, background: '#808080' } }).jpeg().toBuffer();
+    console.log('BINARY-ASSERT OK sharp');
+  } catch (err) {
+    ok = false;
+    console.log(`BINARY-ASSERT FAIL sharp: ${String(err)}`);
+  }
+  try {
+    const bin = ffmpegPath();
+    if (bin === null) throw new Error('ffmpeg path unresolved');
+    const { stdout } = await promisify(execFile)(bin, ['-hide_banner', '-version']);
+    if (!stdout.startsWith('ffmpeg version')) throw new Error(`unexpected output: ${stdout.slice(0, 80)}`);
+    console.log(`BINARY-ASSERT OK ffmpeg (${bin})`);
+  } catch (err) {
+    ok = false;
+    console.log(`BINARY-ASSERT FAIL ffmpeg: ${String(err)}`);
+  }
+  try {
+    // loaded, not started: the update feed is checked only in a normal run
+    const updater = (await import('electron-updater')).default;
+    if (!('autoUpdater' in updater)) throw new Error('no autoUpdater export');
+    console.log('MODULE-ASSERT OK electron-updater');
+  } catch (err) {
+    ok = false;
+    console.log(`MODULE-ASSERT FAIL electron-updater: ${String(err)}`);
+  }
+  return ok;
+}
+
 void app.whenReady().then(async () => {
   Menu.setApplicationMenu(null); // single window, no menus
   // Appearance setting drives prefers-color-scheme via nativeTheme (default
@@ -80,7 +119,8 @@ void app.whenReady().then(async () => {
   // History feature was removed — silently clear any leftover store
   await fs.rm(path.join(app.getPath('userData'), 'history.json'), { force: true }).catch(() => undefined);
   await assertBundledBinaries();
-  initAutoUpdater();
+  const runtimeOk = smokeTest ? await assertRuntime() : true;
+  if (!smokeTest && e2eInputDir === undefined) initAutoUpdater();
   registerIpc(() => {
     if (mainWindow === null || mainWindow.isDestroyed()) mainWindow = createWindow();
     return mainWindow;
@@ -95,15 +135,13 @@ void app.whenReady().then(async () => {
     win.webContents.once('did-finish-load', () => {
       setTimeout(() => {
         void (async () => {
+          let rendered = false;
           try {
             const childCount: unknown = await win.webContents.executeJavaScript(
               `document.getElementById('root')?.children.length ?? -1`,
             );
-            console.log(
-              typeof childCount === 'number' && childCount > 0
-                ? 'SMOKE OK — UI rendered'
-                : `SMOKE FAIL — empty #root (${String(childCount)})`,
-            );
+            rendered = typeof childCount === 'number' && childCount > 0;
+            console.log(rendered ? 'SMOKE OK — UI rendered' : `SMOKE FAIL — empty #root (${String(childCount)})`);
             if (captureArg !== undefined) {
               const dest = captureArg.slice('--capture='.length);
               const image = await win.webContents.capturePage();
@@ -111,9 +149,10 @@ void app.whenReady().then(async () => {
               console.log(`SMOKE CAPTURE ${dest}`);
             }
           } catch (err) {
+            rendered = false;
             console.log(`SMOKE FAIL — ${String(err)}`);
           }
-          app.quit();
+          app.exit(rendered && runtimeOk ? 0 : 1);
         })();
       }, 700);
     });

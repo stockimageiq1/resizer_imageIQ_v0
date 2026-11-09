@@ -11,3 +11,9 @@ icon.iconset/
 # local app data / OS noise
 .DS_Store
 Thumbs.db
+
+# Apple signing: the values stay on the owner's Mac; only the template with
+# placeholders is committed.
+.env.signing
+*.p8
+*.p12

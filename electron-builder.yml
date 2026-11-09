@@ -23,21 +23,44 @@ asarUnpack:
   - "**/node_modules/sharp/**"
   - "**/node_modules/@img/**"
 
+# Signing: electron-builder finds the Developer ID Application identity in the
+# keychain by itself (or the one CSC_NAME names). No name or hash of an identity
+# is written in this repository. forceCodeSigning: a build without a usable
+# identity fails instead of quietly producing an unsigned app; unsigned builds
+# for quick tries override this block from the command line (dist:mac:unsigned,
+# package:mac:x64:unsigned). Notarisation needs APPLE_API_KEY, APPLE_API_KEY_ID,
+# APPLE_API_ISSUER and APPLE_TEAM_ID in the environment (.env.signing.example,
+# the same variables as the Mac app). electron-builder notarises and staples
+# the .app before the dmg and zip are made from it; it does not notarise the
+# dmg, scripts/notarize-mac-dmg.sh does.
 mac:
   category: public.app-category.photography
   icon: build/icon.icns
-  # v1 ships unsigned (documented in docs/INSTALL.md); flip when the Apple
-  # Developer certificate lands.
-  identity: null
+  forceCodeSigning: true
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  notarize: true
+  # No arch here: the command line chooses it (--arm64 / --x64). The zip is
+  # what electron-updater installs on macOS; the dmg is the download.
   target:
-    - target: dmg
+    - dmg
+    - zip
   # stable, versionless asset names for download links
-  artifactName: ImageIQ-Resizer-mac-${arch}.dmg
+  artifactName: ImageIQ-Resizer-mac-${arch}.${ext}
   # Per-arch dmgs instead of universal: sharp's per-arch @img packages and
   # ffmpeg-static's single-arch postinstall binary do not merge cleanly into
-  # one universal asar (mergeASARs requires identical file sets). CI builds
-  # each arch with a matching npm_config_arch install; local default is the
-  # host arch.
+  # one universal asar (mergeASARs requires identical file sets).
+  # npm run dist:mac builds arm64 here; npm run package:mac:x64 builds Intel
+  # in a separate worktree with the x64 packages installed.
+
+# The dmg is signed, notarised and stapled after electron-builder has made it
+# (scripts/notarize-mac-dmg.sh), so it stays out of the update info: its
+# blockmap and sha512 would describe the dmg as it was before stapling.
+dmg:
+  sign: false
+  writeUpdateInfo: false
 
 win:
   icon: build/icon.ico
@@ -64,10 +87,13 @@ nsis:
 toolsets:
   nsis: 1.2.1
 
-# electron-updater feed (GitHub Releases). electron-builder writes
-# app-update.yml into the package from this block. Must match the real
-# repository once the remote exists.
+# electron-updater feed: GitHub Releases of a separate public repository that
+# holds only the release files, no code (as the Mac app). electron-builder
+# writes app-update.yml into the package from this block. It never uploads:
+# every build command passes --publish never, the owner publishes by hand
+# (README, "Releasing an update").
 publish:
   provider: github
   owner: stockimageiq1
-  repo: resizer_imageIQ_v0
+  repo: stockimageiq-resizer-releases
+  releaseType: release

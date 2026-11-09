@@ -1,7 +1,7 @@
 {
   "name": "imageiq-resizer",
   "productName": "ImageIQ Resizer",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "Local media-downscaling engine + CLI for STOCK IMAGEIQ (lowres proxy trees for metadata processing)",
   "private": true,
   "main": "./out/main/index.js",
@@ -16,8 +16,12 @@
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
     "test": "npm run build && node --test \"dist/test/**/*.test.js\"",
     "clean": "rm -rf dist out",
-    "package:mac": "electron-vite build && electron-builder --mac dmg",
-    "package:win": "electron-vite build && electron-builder --win nsis --x64"
+    "dist:mac": "bash scripts/check-mac-signing.sh && electron-vite build && electron-builder --mac --arm64 --publish never && bash scripts/notarize-mac-dmg.sh \"release/mac-arm64/ImageIQ Resizer.app\" release/ImageIQ-Resizer-mac-arm64.dmg",
+    "dist:mac:unsigned": "electron-vite build && electron-builder --mac --arm64 --publish never -c.mac.identity=null -c.mac.forceCodeSigning=false -c.mac.notarize=false",
+    "package:mac:x64": "bash scripts/package-mac-x64.sh",
+    "package:mac:x64:unsigned": "bash scripts/package-mac-x64.sh --unsigned",
+    "release:mac": "npm run build --silent && node dist/src/feed/releaseMac.js",
+    "package:win": "electron-vite build && electron-builder --win nsis --x64 --publish never"
   },
   "engines": {
     "node": ">=20"
@@ -34,7 +38,7 @@
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.2.0",
-    "electron": "^43.1.1",
+    "electron": "^43.8.3",
     "electron-builder": "^26.15.3",
     "electron-vite": "^5.0.0",
     "react": "^19.2.7",

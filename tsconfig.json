@@ -15,5 +15,5 @@
     "sourceMap": true,
     "skipLibCheck": true
   },
-  "include": ["src/engine/**/*", "src/cli.ts", "test/**/*", "scripts/**/*"]
+  "include": ["src/engine/**/*", "src/feed/**/*", "src/cli.ts", "test/**/*", "scripts/**/*"]
 }
